@@ -1,6 +1,7 @@
 import { JwtService } from '@nestjs/jwt'
 import { Test, TestingModule } from '@nestjs/testing'
 import bcrypt from 'bcrypt'
+import { ExecuteHandler } from 'src/common/handlers/execute.handler'
 import { PrismaService } from 'src/prisma.service'
 import { MailService } from '../mail/mail.service'
 import {
@@ -17,6 +18,7 @@ import { AuthService } from './auth.service'
 jest.mock('bcrypt')
 
 describe('AuthService', () => {
+  let execute: ExecuteHandler
   let service: AuthService
   let prisma: PrismaService
   let jwtService: JwtService
@@ -26,6 +28,12 @@ describe('AuthService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
+        {
+          provide: ExecuteHandler,
+          useValue: {
+            repository: jest.fn((fn) => fn()),
+          },
+        },
         {
           provide: PrismaService,
           useValue: {
@@ -81,9 +89,12 @@ describe('AuthService', () => {
     mailService = module.get<MailService>(MailService)
     prisma = module.get<PrismaService>(PrismaService)
     jwtService = module.get<JwtService>(JwtService)
+    execute = module.get<ExecuteHandler>(ExecuteHandler)
   })
 
   it('should be possible to create an account.', async () => {
+    ;(bcrypt.hash as jest.Mock).mockResolvedValue(mockedUser.passwordHash)
+
     jest.spyOn(prisma, '$transaction').mockImplementation(async (callback: any) => {
       return callback({
         business: {
@@ -101,6 +112,8 @@ describe('AuthService', () => {
     const result = await service.signup(mockedAccountRequest)
 
     expect(result).toEqual(mockedAccountRespocnce)
+    expect(mailService.sendCreateAccount).toHaveBeenCalled()
+    expect(jwtService.sign).toHaveBeenCalledTimes(2)
   })
 
   it('Should be able to login with the correct credentials', async () => {

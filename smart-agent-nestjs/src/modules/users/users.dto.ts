@@ -47,18 +47,6 @@ export class UpdateUserDTO {
   @IsOptional()
   email: string
 
-  @ApiProperty({ description: 'User password', minLength: 6 })
-  @IsString()
-  @IsOptional()
-  @MinLength(6)
-  password: string
-
-  @ApiProperty({ description: 'User confirmPassword', minLength: 6 })
-  @IsString()
-  @IsOptional()
-  @MinLength(6)
-  confirmPassword: string
-
   @ApiProperty({
     description: 'User role',
     enum: UserRole,

@@ -31,7 +31,13 @@ async function bootstrap() {
     },
   })
 
-  app.useGlobalPipes(new ValidationPipe())
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  )
 
   app.use(cookieParser(process.env.SECRET_KEY_COOKIES))
 

@@ -35,6 +35,7 @@ class MockedRefreshToken {
   public tokenHash = 'token_hash'
   public expiresAt = nowExpiresDate
   public revoked = false
+  public user = { businessId: mockedBusiness.id }
 }
 
 export const mockedRefreshToken = new MockedRefreshToken()

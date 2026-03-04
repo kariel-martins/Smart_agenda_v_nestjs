@@ -13,12 +13,14 @@ import { UsersModule } from './modules/users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { MailService } from './modules/mail/mail.service';
 import { MailModule } from './modules/mail/mail.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
       isGlobal: true,
     }),
-    AppointmentModule, AuthModule, ServicesModule, AvailibilityModule, BusinessModule, ClientsModule, NoShowRulesModule, ProfessionalModule, UsersModule, MailModule],
+    AppointmentModule, AuthModule, ServicesModule, AvailibilityModule, BusinessModule, ClientsModule, NoShowRulesModule, ProfessionalModule, UsersModule, MailModule, NotificationsModule, ReportsModule],
   controllers: [AppController],
   providers: [AppService, MailService],
 })

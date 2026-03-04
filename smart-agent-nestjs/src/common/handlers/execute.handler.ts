@@ -17,7 +17,7 @@ export class ExecuteHandler {
         })
 
       return result
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new ConflictException('Email já cadastrado')
@@ -25,7 +25,7 @@ export class ExecuteHandler {
       }
       if (error instanceof HttpException) throw error
 
-      console.error(error.message)
+      console.error((error as Error)?.message)
       throw new HttpException(message, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }

@@ -11,7 +11,10 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common'
+import { UserRole } from '@prisma/client'
+import { Roles } from 'src/common/decorators/roles.decorator'
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard'
+import { RolesGuard } from 'src/common/guards/roles-guard/roles-guard.guard'
 import { UpdateUserDTO, UserDTO } from './users.dto'
 import { UsersService } from './users.service'
 
@@ -19,7 +22,8 @@ import { UsersService } from './users.service'
   version: '1',
   path: 'users',
 })
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.admin)
 export class UsersController {
   constructor(private readonly service: UsersService) {}
 

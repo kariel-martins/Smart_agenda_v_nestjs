@@ -14,9 +14,9 @@ export class UsersService {
   ) {}
 
   public create(data: UserDTO) {
-    const user = this.requestContext.getUser()
     return this.execute.repository(
       async () => {
+        const user = this.requestContext.getUser()
         if (data.password !== data.confirmPassword)
           throw new HttpException('Senhas não coincidem', HttpStatus.NOT_FOUND)
 
@@ -99,10 +99,6 @@ export class UsersService {
     return this.execute.repository(
       async () => {
         const user = this.requestContext.getUser()
-
-        if (data.password !== data.confirmPassword)
-          throw new HttpException('Senhas não coincidem', HttpStatus.NOT_FOUND)
-        const passwordHash = await bcrypt.hash(data.password, 12)
         const result = await this.prisma.user.update({
           where: {
             id: userId,
@@ -112,7 +108,6 @@ export class UsersService {
             email: data.email,
             name: data.name,
             userRole: data.UserRole,
-            passwordHash,
             businessId: user.businessId,
           },
         })

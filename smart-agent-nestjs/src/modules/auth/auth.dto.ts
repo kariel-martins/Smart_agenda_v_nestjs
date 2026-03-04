@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger'
 import { UserRole } from '@prisma/client'
 import { IsNotEmpty, IsString, MinLength } from 'class-validator'
 
-class UserDTO {
+class AuthUserDTO {
   @ApiProperty() name: string
   @ApiProperty() email: string
   @ApiProperty() userRole: UserRole
@@ -56,8 +56,8 @@ export class BusinessUserAndTokensDTO {
   @ApiProperty() email: string
   @ApiProperty() timezone: string
   @ApiProperty() createdAt: Date
-  @ApiProperty({ type: UserDTO })
-  user: UserDTO
+  @ApiProperty({ type: AuthUserDTO })
+  user: AuthUserDTO
 
   @ApiProperty() refreshToken: string
   @ApiProperty() accessToken: string
