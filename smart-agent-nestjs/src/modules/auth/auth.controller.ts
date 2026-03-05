@@ -1,8 +1,10 @@
 import { Body, Controller, Post, Req, Res, UnauthorizedException } from '@nestjs/common'
-import { ApiResponse } from '@nestjs/swagger'
+import { ApiCreatedResponse, ApiOkResponse, ApiProperty, ApiResponse } from '@nestjs/swagger'
 import { Request, Response } from 'express'
-import { BusinessUserAndTokensDTO, SignInDTO, SingUpWithConfirmPassword } from './auth.dto'
+import { BusinessUserAndTokensDTO, MessageReponceDTO, RefreshTokenReponceDTO, SignInDTO, SingUpWithConfirmPassword } from './auth.dto'
 import { AuthService } from './auth.service'
+import { IsString } from 'class-validator'
+import { forgotPassword } from '../mail/mail.template'
 
 @Controller({
   version: '1',
@@ -12,7 +14,7 @@ export class AuthController {
   constructor(private readonly AuthService: AuthService) {}
 
   @Post('signup')
-  @ApiResponse({ type: BusinessUserAndTokensDTO })
+  @ApiCreatedResponse({ type: BusinessUserAndTokensDTO })
   async singUp(
     @Body() data: SingUpWithConfirmPassword,
     @Res({ passthrough: true }) response: Response,
@@ -36,7 +38,7 @@ export class AuthController {
   }
 
   @Post('signin')
-  @ApiResponse({ type: BusinessUserAndTokensDTO })
+  @ApiOkResponse({ type: BusinessUserAndTokensDTO })
   async singin(@Body() data: SignInDTO, @Res({ passthrough: true }) response: Response) {
     const auth = await this.AuthService.signIn(data)
 
@@ -57,6 +59,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @ApiOkResponse({ type: RefreshTokenReponceDTO })
   async refresh(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
     const token = request.cookies.refresh_token
     if (!token) {
@@ -83,18 +86,24 @@ export class AuthController {
   }
 
   @Post('forgot-password')
+  @ApiOkResponse({ type: MessageReponceDTO
+  })
   async forgotPassword(@Body() data: { email: string }) {
     await this.AuthService.forgotPassword(data.email)
     return { message: 'Email enviar com sucesso!' }
   }
 
   @Post('reset-password')
+  @ApiOkResponse({ type: MessageReponceDTO
+  })
   async resetPassword(@Body() data: any) {
     await this.AuthService.resetPassword(data)
     return { message: 'Senha atualizada com sucesso!' }
   }
 
   @Post('logout')
+  @ApiOkResponse({ type: MessageReponceDTO
+  })
   logout(@Res({ passthrough: true }) response: Response) {
     response.clearCookie('access_token')
     return { message: 'Logout realizado com sucesso!' }

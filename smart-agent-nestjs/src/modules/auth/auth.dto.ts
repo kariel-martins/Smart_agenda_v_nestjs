@@ -80,3 +80,19 @@ export class SignInWithRefreshTokenReposnceDTO extends RefreshTokenDTO {
   accessToken: string
   refreshToken: string
 }
+
+export class RefreshTokenReponceDTO {
+  @ApiProperty({ description: 'accessToken'})
+  @IsString()
+  accessToken: string
+
+    @ApiProperty({ description: 'refreshToken'})
+  @IsString()
+  refreshToken: string
+}
+
+export class MessageReponceDTO {
+  @ApiProperty({ description: 'message'})
+    @IsString()
+    message: string
+}

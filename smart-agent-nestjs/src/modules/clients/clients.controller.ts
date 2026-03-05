@@ -17,8 +17,9 @@ import { Roles } from 'src/common/decorators/roles.decorator'
 import { QueryPaginationDTO } from 'src/common/dtos/query-pagination'
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard'
 import { RolesGuard } from 'src/common/guards/roles-guard/roles-guard.guard'
-import { ClientRequestDTO, FindQueryClientDTO, UpdateClientRequestDTO } from './client.dto'
+import { ClientDTO, ClientRequestDTO, FindQueryClientDTO, UpdateClientRequestDTO } from './client.dto'
 import { ClientsService } from './clients.service'
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 
 @Controller({
   version: '1',
@@ -30,21 +31,25 @@ import { ClientsService } from './clients.service'
 export class ClientsController {
   constructor(private readonly service: ClientsService) {}
   @Get()
-  getAll(@Query() query?: QueryPaginationDTO, @Query() params?: FindQueryClientDTO) {
+  @ApiOkResponse({ type: ClientDTO })
+  findAll(@Query() query?: QueryPaginationDTO, @Query() params?: FindQueryClientDTO) {
     return this.service.findAll(query, params)
   }
 
   @Post()
+   @ApiCreatedResponse({ type: ClientDTO })
   create(@Body() data: ClientRequestDTO) {
     return this.service.create(data)
   }
 
   @Get(':clientId')
-  getById(@Param('clientId', ParseUUIDPipe) clientId: string) {
+   @ApiOkResponse({ type: ClientDTO })
+  findById(@Param('clientId', ParseUUIDPipe) clientId: string) {
     return this.service.findById(clientId)
   }
 
   @Put('clientId')
+   @ApiOkResponse({ type: ClientDTO })
   update(@Param('clientId', ParseUUIDPipe) clientId: string, @Body() data: UpdateClientRequestDTO) {
     return this.service.update(clientId, data)
   }

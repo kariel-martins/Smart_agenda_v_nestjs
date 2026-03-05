@@ -44,9 +44,15 @@ export class ServicesService {
         include: {
           appointments: {
             select: {
-              client: true,
+              status: true,
               date: true,
               createdAt: true,
+              client: {
+                select: {
+                  name: true,
+                  id: true,
+                },
+              },
             },
           },
         },

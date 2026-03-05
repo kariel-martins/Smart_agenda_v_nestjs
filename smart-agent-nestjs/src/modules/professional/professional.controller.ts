@@ -25,6 +25,7 @@ import {
   UpdateProfessionalRequestDTO,
 } from './professional.dto'
 import { ProfessionalService } from './professional.service'
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 
 @Controller({
   version: '1',
@@ -37,21 +38,24 @@ export class ProfessionalController {
 
   @Get()
   @ApiPaginatedResponse(ProfessionalDTO)
-  getAll(@Query() query?: QueryPaginationDTO, @Query() params?: findQueryProfessionalDTO) {
+  findAll(@Query() query?: QueryPaginationDTO, @Query() params?: findQueryProfessionalDTO) {
     return this.service.findAll(query, params)
   }
 
   @Post()
+  @ApiCreatedResponse({ type: ProfessionalDTO })
   create(@Body() data: ProfessionalRequestDTO) {
     return this.service.create(data)
   }
 
   @Get(':professionalId')
-  getById(@Param('professionalId', ParseIntPipe) professionalId: number) {
-    return this.service.finById(professionalId)
+   @ApiOkResponse({ type: ProfessionalDTO })
+  findById(@Param('professionalId', ParseIntPipe) professionalId: number) {
+    return this.service.findById(professionalId)
   }
 
   @Put(':professionalId')
+   @ApiOkResponse({ type: ProfessionalDTO })
   update(
     @Param('professionalId', ParseIntPipe) professionalId: number,
     @Body() data: UpdateProfessionalRequestDTO,

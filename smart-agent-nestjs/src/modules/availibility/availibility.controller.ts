@@ -19,7 +19,8 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard'
 import { RolesGuard } from 'src/common/guards/roles-guard/roles-guard.guard'
 import { ValidateResoucesIdsInterceptor } from 'src/common/interceptors/validate-resouces-ids/validate-resouces-ids.interceptor'
 import { AvailibilityService } from './availibility.service'
-import { AvailabityRequestDTO, UpdateAvailabityRequestDTO } from './availibity.dto'
+import { AvailabityDTO, AvailabityRequestDTO, UpdateAvailabityRequestDTO } from './availibity.dto'
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 
 @Controller({
   version: '1',
@@ -33,6 +34,7 @@ export class AvailibilityController {
 
   @Post()
   @ValidateResourcesIds()
+  @ApiCreatedResponse({ type: AvailabityDTO})
   create(
     @Param('professionalId', ParseIntPipe) professionalId: number,
     @Body() data: AvailabityRequestDTO,
@@ -41,13 +43,15 @@ export class AvailibilityController {
   }
 
   @Get()
+  @ApiOkResponse({ type: AvailabityDTO})
   @ValidateResourcesIds()
-  getAll(@Param('professionalId', ParseIntPipe) professionalId: number) {
+  findAll(@Param('professionalId', ParseIntPipe) professionalId: number) {
     return this.service.findAll(professionalId)
   }
 
   @Put(':availabityId')
   @ValidateResourcesIds()
+  @ApiOkResponse({ type: AvailabityDTO})
   update(
     @Param('professionalId', ParseIntPipe) professionalId: number,
     @Param('availabityId', ParseIntPipe) availabityId: number,
