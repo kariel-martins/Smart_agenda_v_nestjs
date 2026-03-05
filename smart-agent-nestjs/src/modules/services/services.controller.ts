@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Post,
@@ -16,8 +18,9 @@ import { QueryPaginationDTO } from 'src/common/dtos/query-pagination'
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard'
 import { RolesGuard } from 'src/common/guards/roles-guard/roles-guard.guard'
 import { ApiPaginatedResponse } from 'src/common/swagger/api-paginated-response'
-import { findQueryServiceDTO, ServiceRequestDTO, ServiceUpdateRequestDTO } from './services.dto'
+import { findQueryServiceDTO, ServiceDTO, ServiceRequestDTO, ServiceUpdateRequestDTO } from './services.dto'
 import { ServicesService } from './services.service'
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 
 @Controller({
   version: '1',
@@ -35,16 +38,19 @@ export class ServicesController {
   }
 
   @Post()
+  @ApiCreatedResponse({ type: ServiceDTO })
   create(@Body() data: ServiceRequestDTO) {
     return this.service.create(data)
   }
 
   @Get(':serviceId')
+  @ApiOkResponse( { type: ServiceDTO })
   findById(@Param('serviceId', ParseIntPipe) serviceId: number) {
     return this.service.findById(serviceId)
   }
 
   @Put(':serviceId')
+  @ApiOkResponse( { type: ServiceDTO })
   update(
     @Param('serviceId', ParseIntPipe) serviceId: number,
     @Body() data: ServiceUpdateRequestDTO,
@@ -53,6 +59,7 @@ export class ServicesController {
   }
 
   @Delete(':serviceId')
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('serviceId', ParseIntPipe) serviceId: number) {
     return this.service.delete(serviceId)
   }

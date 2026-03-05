@@ -54,7 +54,7 @@ export class ProfessionalService {
     }, 'Não há proficionais disponíveis!')
   }
 
-  finById(professionalId: number) {
+  findById(professionalId: number) {
     return this.execute.repository(async () => {
       const user = this.RequestContext.getUser()
       const result = await this.prisma.professional.findFirst({

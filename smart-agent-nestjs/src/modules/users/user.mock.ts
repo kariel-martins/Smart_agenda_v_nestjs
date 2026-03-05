@@ -12,7 +12,7 @@ class MockedFakerBusiness {
   public phone = '9999999900'
 }
 
-class MockedFakerUser {
+class UserMock {
   public id = faker.string.uuid()
   public email = faker.internet.email()
   public name = faker.person.fullName()
@@ -23,9 +23,9 @@ class MockedFakerUser {
   public updatedAt = new Date()
 }
 
-export const mockedFakerUserMultiple = faker.helpers.multiple<User>(() => new MockedFakerUser())
+export const mockedFakerUserMultiple = faker.helpers.multiple<User>(() => new UserMock())
 
-class MockedFakerFindByIdUser extends MockedFakerUser {
+class MockedFakerFindByIdUser extends UserMock {
   business: MockedFakerBusiness
 }
 
