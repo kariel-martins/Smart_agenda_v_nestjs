@@ -33,7 +33,7 @@ export class AppointmentService {
     }, 'Não foi possível criar o agendamento')
   }
 
-  findAll(query: QueryPaginationDTO, params: FindAppointmentsQueryDTO) {
+  findAll(query?: QueryPaginationDTO, params?: FindAppointmentsQueryDTO) {
     return this.execute.repository(async () => {
       const user = this.requestContext.getUser()
       const result = await this.prisma.appointment.findMany({
@@ -41,6 +41,23 @@ export class AppointmentService {
         where: {
           businessId: user.businessId,
           ...params,
+        },
+        include: {
+          client: {
+            select: {
+              name: true,
+            },
+          },
+          professional: {
+            select: {
+              name: true,
+            },
+          },
+          service: {
+            select: {
+              name: true,
+            },
+          },
         },
       })
 

@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger'
 import { AppointmentStatus } from '@prisma/client'
 import { Type } from 'class-transformer'
 import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
+import { ClientDTO } from '../clients/client.dto'
 
 export class AppointmentDTO {
   @ApiProperty({ description: 'Appointment createAt' })
@@ -125,12 +126,57 @@ export class UpdateAppointmentDTO {
   })
   @IsEnum({ type: AppointmentStatus })
   @IsOptional()
-  status?: AppointmentStatus | null
+  status?: AppointmentStatus
+
+  @ApiProperty({ description: 'Appointment confirmAt' })
+  @IsDate()
+  @IsOptional()
+  confirmAt?: Date | null
+}
+
+class ProfessionalDTO {
+  @ApiProperty({ description: 'Professional name' })
+  @IsString()
+  @IsNotEmpty()
+  name: string
+}
+
+class ServiceDTO {
+  @ApiProperty({ description: 'service name' })
+  @IsString()
+  @IsNotEmpty()
+  name: string
+}
+
+export class FindAllAppointments extends AppointmentDTO {
+  client: ClientDTO
+  professional: ProfessionalDTO
+  serivce: ServiceDTO
 }
 
 export class FindAppointmentsQueryDTO {
-  date?: string
-  status?: AppointmentStatus = AppointmentStatus.scheduled
-  confirmAt?: Date
-  createdAt?: Date
+  @ApiProperty({ description: 'Appointment date' })
+  @IsString()
+  @IsOptional()
+  date: string
+
+  @ApiProperty({
+    description: 'Appointment status',
+    enum: AppointmentStatus,
+    default: AppointmentStatus.scheduled,
+    required: false,
+  })
+  @IsEnum({ type: AppointmentStatus })
+  @IsOptional()
+  status?: AppointmentStatus
+
+  @ApiProperty({ description: 'Appointment confirmAt' })
+  @IsDate()
+  @IsOptional()
+  confirmAt?: Date | null
+
+  @ApiProperty({ description: 'Appointment createAt' })
+  @IsDate()
+  @IsOptional()
+  createdAt: Date
 }

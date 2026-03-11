@@ -8,6 +8,9 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator'
+import { AppointmentDTO } from '../appointment/appointment.dto'
+import { AvailabityDTO } from '../availibility/availibity.dto'
+import { ServiceDTO } from '../services/services.dto'
 
 export class ProfessionalDTO {
   @ApiProperty({ description: 'Professional Id' })
@@ -80,4 +83,23 @@ export class findQueryProfessionalDTO {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean
+}
+
+class ServiceProfData {
+  service: [ServiceDTO]
+}
+
+class clientName {
+  @ApiProperty({ description: 'Client name' })
+  name: string
+}
+
+class AppointmentProfessional extends AppointmentDTO {
+  client: clientName
+}
+
+export class ProfessionalByIdResponce extends ProfessionalDTO {
+  appointments: [AppointmentProfessional]
+  availabilities: [AvailabityDTO]
+  service: ServiceProfData
 }

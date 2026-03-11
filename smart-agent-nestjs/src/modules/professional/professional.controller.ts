@@ -12,6 +12,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common'
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import { UserRole } from '@prisma/client'
 import { Roles } from 'src/common/decorators/roles.decorator'
 import { QueryPaginationDTO } from 'src/common/dtos/query-pagination'
@@ -20,12 +21,12 @@ import { RolesGuard } from 'src/common/guards/roles-guard/roles-guard.guard'
 import { ApiPaginatedResponse } from 'src/common/swagger/api-paginated-response'
 import {
   findQueryProfessionalDTO,
+  ProfessionalByIdResponce,
   ProfessionalDTO,
   ProfessionalRequestDTO,
   UpdateProfessionalRequestDTO,
 } from './professional.dto'
 import { ProfessionalService } from './professional.service'
-import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 
 @Controller({
   version: '1',
@@ -49,13 +50,13 @@ export class ProfessionalController {
   }
 
   @Get(':professionalId')
-   @ApiOkResponse({ type: ProfessionalDTO })
+  @ApiOkResponse({ type: ProfessionalByIdResponce })
   findById(@Param('professionalId', ParseIntPipe) professionalId: number) {
     return this.service.findById(professionalId)
   }
 
   @Put(':professionalId')
-   @ApiOkResponse({ type: ProfessionalDTO })
+  @ApiOkResponse({ type: ProfessionalDTO })
   update(
     @Param('professionalId', ParseIntPipe) professionalId: number,
     @Body() data: UpdateProfessionalRequestDTO,

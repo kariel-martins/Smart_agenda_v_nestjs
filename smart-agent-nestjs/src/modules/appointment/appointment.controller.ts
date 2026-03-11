@@ -9,16 +9,17 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common'
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import { QueryPaginationDTO } from 'src/common/dtos/query-pagination'
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard'
 import {
   AppointmentDTO,
   AppointmentRequestDTO,
+  FindAllAppointments,
   FindAppointmentsQueryDTO,
   UpdateAppointmentDTO,
 } from './appointment.dto'
 import { AppointmentService } from './appointment.service'
-import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 
 @Controller({
   version: '1',
@@ -35,8 +36,8 @@ export class AppointmentController {
   }
 
   @Get()
-  @ApiOkResponse({ type: AppointmentDTO })
-  findAll(@Query() query: QueryPaginationDTO, @Query() params: FindAppointmentsQueryDTO) {
+  @ApiOkResponse({ type: FindAllAppointments })
+  findAll(@Query() query?: QueryPaginationDTO, @Query() params?: FindAppointmentsQueryDTO) {
     return this.service.findAll(query, params)
   }
 
@@ -45,6 +46,7 @@ export class AppointmentController {
   confirm(@Param('appointmentId', ParseIntPipe) appointmentId: number) {
     return this.service.update(appointmentId, {
       status: 'confirmed',
+      confirmAt: new Date(),
     })
   }
 

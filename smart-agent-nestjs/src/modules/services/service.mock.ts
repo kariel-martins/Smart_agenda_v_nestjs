@@ -26,7 +26,7 @@ class ServiceMock {
 
 export const serviceMock = faker.helpers.multiple(() => new ServiceMock(), { count: 10 })
 
-export const mockPaginationQuery: QueryPaginationDTO = { page: '1', size: '10' }
+export const mockPaginationQuery: QueryPaginationDTO = { page: 1, size: 10 }
 
 class appointmentsMock {
   createdAt = faker.date.anytime()

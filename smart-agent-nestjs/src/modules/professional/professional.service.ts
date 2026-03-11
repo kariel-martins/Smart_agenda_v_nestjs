@@ -62,6 +62,23 @@ export class ProfessionalService {
           businessId: user.businessId,
           id: professionalId,
         },
+        include: {
+          availabilities: true,
+          appointments: {
+            include: {
+              client: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          service: {
+            select: {
+              service: true,
+            },
+          },
+        },
       })
 
       return result

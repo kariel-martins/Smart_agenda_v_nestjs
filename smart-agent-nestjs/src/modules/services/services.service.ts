@@ -23,12 +23,23 @@ export class ServicesService {
     return this.execute.repository(async () => {
       const user = this.requestContext.getUser()
 
-      const newService = await this.prisma.service.create({
-        data: {
-          businessId: user.businessId,
-          ...data,
-        },
+      const { professionalId, ...rest } = data
+
+      const newService = await this.prisma.$transaction(async (tx) => {
+        const service = await tx.service.create({
+          data: {
+            businessId: user.businessId,
+            ...rest,
+          },
+        })
+        await tx.professionalService.create({
+          data: {
+            professionalId,
+            serviceId: service.id,
+          },
+        })
       })
+
       return newService
     }, 'Não foi possível crair o serviço!')
   }
@@ -42,17 +53,13 @@ export class ServicesService {
           businessId: user.businessId,
         },
         include: {
+          professional: true,
           appointments: {
             select: {
               status: true,
               date: true,
               createdAt: true,
-              client: {
-                select: {
-                  name: true,
-                  id: true,
-                },
-              },
+              client: true,
             },
           },
         },

@@ -58,6 +58,7 @@ describe('AppointmentController', () => {
 
       expect(service.update).toHaveBeenCalledWith(1, {
         status: 'confirmed',
+        confirmAt: new Date(),
       })
     })
   })

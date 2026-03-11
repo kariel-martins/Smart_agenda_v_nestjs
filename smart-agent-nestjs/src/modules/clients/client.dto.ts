@@ -82,20 +82,3 @@ export class UpdateClientRequestDTO {
   @IsOptional()
   email: string
 }
-
-export class FindQueryClientDTO {
-  @ApiProperty({ description: 'Client Name' })
-  @IsString()
-  @IsOptional()
-  name: string
-
-  @ApiProperty({ description: 'Client phone' })
-  @IsString()
-  @IsOptional()
-  phone: string
-
-  @ApiProperty({ description: 'Client email' })
-  @IsEmail()
-  @IsOptional()
-  email: string
-}

@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
+import { ClientDTO } from '../clients/client.dto'
+import { ProfessionalDTO } from '../professional/professional.dto'
 
 export class ServiceDTO {
   @ApiProperty({ description: 'Service name' })
@@ -34,6 +36,11 @@ export class ServiceDTO {
 }
 
 export class ServiceRequestDTO {
+  @ApiProperty({ description: 'Service id professional' })
+  @IsNumber()
+  @IsNotEmpty()
+  professionalId: number
+
   @ApiProperty({ description: 'Service name' })
   @IsString()
   @IsNotEmpty()
@@ -72,4 +79,16 @@ export class findQueryServiceDTO {
   @IsString()
   @IsOptional()
   name: string
+}
+
+class BusinessClientDTO {
+  status: string
+  date: string
+  createdAt: string
+  clients: [ClientDTO]
+}
+
+export class findServiceByIdDTO extends ServiceDTO {
+  business: BusinessClientDTO
+  professionals: [ProfessionalDTO]
 }

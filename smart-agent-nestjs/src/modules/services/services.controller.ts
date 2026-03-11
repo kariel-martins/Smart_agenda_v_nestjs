@@ -12,15 +12,21 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common'
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import { UserRole } from '@prisma/client'
 import { Roles } from 'src/common/decorators/roles.decorator'
 import { QueryPaginationDTO } from 'src/common/dtos/query-pagination'
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard'
 import { RolesGuard } from 'src/common/guards/roles-guard/roles-guard.guard'
 import { ApiPaginatedResponse } from 'src/common/swagger/api-paginated-response'
-import { findQueryServiceDTO, ServiceDTO, ServiceRequestDTO, ServiceUpdateRequestDTO } from './services.dto'
+import {
+  findQueryServiceDTO,
+  findServiceByIdDTO,
+  ServiceDTO,
+  ServiceRequestDTO,
+  ServiceUpdateRequestDTO,
+} from './services.dto'
 import { ServicesService } from './services.service'
-import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 
 @Controller({
   version: '1',
@@ -44,13 +50,13 @@ export class ServicesController {
   }
 
   @Get(':serviceId')
-  @ApiOkResponse( { type: ServiceDTO })
+  @ApiOkResponse({ type: findServiceByIdDTO })
   findById(@Param('serviceId', ParseIntPipe) serviceId: number) {
     return this.service.findById(serviceId)
   }
 
   @Put(':serviceId')
-  @ApiOkResponse( { type: ServiceDTO })
+  @ApiOkResponse({ type: ServiceDTO })
   update(
     @Param('serviceId', ParseIntPipe) serviceId: number,
     @Body() data: ServiceUpdateRequestDTO,
