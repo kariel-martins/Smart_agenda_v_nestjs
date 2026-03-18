@@ -8,22 +8,22 @@ import {
   Post,
   Query,
   UseGuards,
-} from '@nestjs/common'
-import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
-import { QueryPaginationDTO } from 'src/common/dtos/query-pagination'
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard'
+} from "@nestjs/common";
+import { ApiCreatedResponse, ApiOkResponse } from "@nestjs/swagger";
+import { QueryPaginationDTO } from "src/common/dtos/query-pagination";
+import { JwtAuthGuard } from "src/common/guards/jwt-auth/jwt-auth.guard";
 import {
   AppointmentDTO,
   AppointmentRequestDTO,
   FindAllAppointments,
   FindAppointmentsQueryDTO,
   UpdateAppointmentDTO,
-} from './appointment.dto'
-import { AppointmentService } from './appointment.service'
+} from "./appointment.dto";
+import { AppointmentService } from "./appointment.service";
 
 @Controller({
-  version: '1',
-  path: 'appointments',
+  version: "1",
+  path: "appointments",
 })
 @UseGuards(JwtAuthGuard)
 export class AppointmentController {
@@ -32,53 +32,56 @@ export class AppointmentController {
   @Post()
   @ApiCreatedResponse({ type: AppointmentDTO })
   create(@Body() data: AppointmentRequestDTO) {
-    return this.service.create(data)
+    return this.service.create(data);
   }
 
   @Get()
   @ApiOkResponse({ type: FindAllAppointments })
-  findAll(@Query() query?: QueryPaginationDTO, @Query() params?: FindAppointmentsQueryDTO) {
-    return this.service.findAll(query, params)
+  findAll(
+    @Query() query?: QueryPaginationDTO,
+    @Query() params?: FindAppointmentsQueryDTO,
+  ) {
+    return this.service.findAll(query, params);
   }
 
-  @Patch(':appointmentId/confirm')
+  @Patch(":appointmentId/confirm")
   @ApiOkResponse({ type: AppointmentDTO })
-  confirm(@Param('appointmentId', ParseIntPipe) appointmentId: number) {
-    return this.service.update(appointmentId, {
-      status: 'confirmed',
+  confirm(@Param("appointmentId", ParseIntPipe) appointmentId: number) {
+    return this.service.updateStatus(appointmentId, {
+      status: "confirmed",
       confirmAt: new Date(),
-    })
+    });
   }
 
-  @Patch(':appointmentId/complete')
+  @Patch(":appointmentId/complete")
   @ApiOkResponse({ type: AppointmentDTO })
-  complete(@Param('appointmentId', ParseIntPipe) appointmentId: number) {
-    return this.service.update(appointmentId, {
-      status: 'completed',
-    })
+  complete(@Param("appointmentId", ParseIntPipe) appointmentId: number) {
+    return this.service.updateStatus(appointmentId, {
+      status: "completed",
+    });
   }
 
-  @Patch(':appointmentId/cancel')
+  @Patch(":appointmentId/cancel")
   @ApiOkResponse({ type: AppointmentDTO })
   cancel(
-    @Param('appointmentId', ParseIntPipe) appointmentId: number,
+    @Param("appointmentId", ParseIntPipe) appointmentId: number,
     @Body() data: UpdateAppointmentDTO,
   ) {
-    return this.service.update(appointmentId, {
-      status: 'canceled',
-      ...data,
-    })
+    return this.service.updateStatus(appointmentId, {
+      status: "canceled",
+      cancelReason: data.cancelReason,
+    });
   }
 
-  @Patch(':appointmentId/no-show')
+  @Patch(":appointmentId/no-show")
   @ApiOkResponse({ type: AppointmentDTO })
   NoShow(
-    @Param('appointmentId', ParseIntPipe) appointmentId: number,
+    @Param("appointmentId", ParseIntPipe) appointmentId: number,
     @Body() data: UpdateAppointmentDTO,
   ) {
-    return this.service.update(appointmentId, {
-      status: 'no_show',
-      ...data,
-    })
+    return this.service.updateStatus(appointmentId, {
+      status: "no_show",
+      cancelReason: data.cancelReason,
+    });
   }
 }

@@ -6,7 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  ParseUUIDPipe,
+  ParseIntPipe,
   Post,
   Put,
   UseGuards,
@@ -38,17 +38,17 @@ export class NoShowRulesController {
     return this.service.findAll()
   }
 
-  @Put('noShoewId')
+  @Put(':noShoewId')
   update(
-    @Param('noShoewId', ParseUUIDPipe) noShoewId: number,
+    @Param('noShoewId', ParseIntPipe) noShoewId: number,
     @Body() data: UpdateNoShowRuleRequestDTO,
   ) {
     return this.service.update(noShoewId, data)
   }
 
-  @Delete('noShoewId')
+  @Delete(':noShoewId')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('noShoewId', ParseUUIDPipe) noShoewId: number) {
+  remove(@Param('noShoewId', ParseIntPipe) noShoewId: number) {
     return this.service.delete(noShoewId)
   }
 }

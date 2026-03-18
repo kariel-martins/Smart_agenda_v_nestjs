@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { AppointmentStatus } from '@prisma/client'
 import {
   IsDate,
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -81,4 +83,19 @@ export class UpdateClientRequestDTO {
   @IsEmail()
   @IsOptional()
   email: string
+}
+
+class AppointmentDTO { 
+   @ApiProperty({
+      description: 'Appointment status',
+      enum: AppointmentStatus,
+      default: AppointmentStatus.scheduled,
+      required: false,
+    })
+    @IsEnum({ type: AppointmentStatus })
+    @IsOptional()
+    status?: AppointmentStatus
+}
+export class ClientWithAppointment extends ClientDTO {
+  appointments: AppointmentDTO[]
 }

@@ -133,6 +133,9 @@ model Client {
   name              String
   phone             String
   email             String   @unique
+   isBlocked       Boolean @default(false) @map("is_blocked")
+  requiresDeposit Boolean @default(false) @map("requires_deposit")
+  pendingApproval Boolean @default(false) @map("pending_approval")
   noShowCount       Int?     @map("no_show_count")
   totalAppointments Int?     @map("total_appointments")
   createdAt         DateTime @default(now()) @map("created_at")

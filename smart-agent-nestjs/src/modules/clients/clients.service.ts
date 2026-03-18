@@ -4,7 +4,7 @@ import { ExecuteHandler } from 'src/common/handlers/execute.handler'
 import { RequestContextService } from 'src/common/services/request-context/request-context.service'
 import { PrismaService } from 'src/prisma.service'
 import { paginate, paginateOutput } from 'src/utils/pagination.utils'
-import { ClientDTO, ClientRequestDTO, UpdateClientRequestDTO } from './client.dto'
+import { ClientDTO, ClientRequestDTO, ClientWithAppointment, UpdateClientRequestDTO } from './client.dto'
 
 @Injectable()
 export class ClientsService {
@@ -46,7 +46,13 @@ export class ClientsService {
         ...paginate(query),
         where: {
           businessId: user.businessId,
-        },
+        }, include: {
+          appointments: {
+            select: {
+              status: true
+            }
+          }
+        }
       })
 
       const total = await this.prisma.client.count({
@@ -55,7 +61,7 @@ export class ClientsService {
         },
       })
 
-      return paginateOutput<ClientDTO>(newClient, total, query)
+      return paginateOutput<ClientWithAppointment>(newClient, total, query)
     }, 'Não há clientes disponíveis!')
   }
   async update(clientId: string, data: UpdateClientRequestDTO) {

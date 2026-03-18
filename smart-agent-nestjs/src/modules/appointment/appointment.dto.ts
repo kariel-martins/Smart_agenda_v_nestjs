@@ -1,182 +1,190 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { AppointmentStatus } from '@prisma/client'
-import { Type } from 'class-transformer'
-import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
-import { ClientDTO } from '../clients/client.dto'
+import { ApiProperty } from "@nestjs/swagger";
+import { AppointmentStatus } from "@prisma/client";
+import { Type } from "class-transformer";
+import {
+  IsDate,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from "class-validator";
+import { ClientDTO } from "../clients/client.dto";
 
 export class AppointmentDTO {
-  @ApiProperty({ description: 'Appointment createAt' })
+  @ApiProperty({ description: "Appointment createAt" })
   @IsDate()
   @IsNotEmpty()
-  createdAt: Date
+  createdAt: Date;
 
-  @ApiProperty({ description: 'Appointment id' })
+  @ApiProperty({ description: "Appointment id" })
   @IsNumber()
   @IsNotEmpty()
-  id: number
+  id: number;
 
-  @ApiProperty({ description: 'Appointment businessId' })
+  @ApiProperty({ description: "Appointment businessId" })
   @IsUUID()
   @IsNotEmpty()
-  businessId: string
+  businessId: string;
 
-  @ApiProperty({ description: 'Appointment date' })
+  @ApiProperty({ description: "Appointment date" })
   @IsString()
   @IsNotEmpty()
-  date: string
+  date: string;
 
-  @ApiProperty({ description: 'Appointment startTime' })
+  @ApiProperty({ description: "Appointment startTime" })
   @IsString()
   @IsNotEmpty()
-  startTime: string
+  startTime: string;
 
-  @ApiProperty({ description: 'Appointment endTime' })
+  @ApiProperty({ description: "Appointment endTime" })
   @IsString()
   @IsNotEmpty()
-  endTime: string
+  endTime: string;
 
   @ApiProperty({
-    description: 'Appointment status',
+    description: "Appointment status",
     enum: AppointmentStatus,
     default: AppointmentStatus.scheduled,
     required: false,
   })
   @IsEnum({ type: AppointmentStatus })
   @IsOptional()
-  status?: AppointmentStatus | null
+  status?: AppointmentStatus | null;
 
-  @ApiProperty({ description: 'Appointment cancelReason' })
+  @ApiProperty({ description: "Appointment cancelReason" })
   @IsString()
   @IsOptional()
-  cancelReason?: string | null
+  cancelReason?: string | null;
 
-  @ApiProperty({ description: 'Appointment confirmAt' })
+  @ApiProperty({ description: "Appointment confirmAt" })
   @IsDate()
   @IsNotEmpty()
-  confirmAt: Date | null
+  confirmAt: Date | null;
 
-  @ApiProperty({ description: 'Appointment professionalId' })
+  @ApiProperty({ description: "Appointment professionalId" })
   @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
-  professionalId: number
+  professionalId: number;
 
-  @ApiProperty({ description: 'Appointment clientId' })
+  @ApiProperty({ description: "Appointment clientId" })
   @IsString()
   @IsNotEmpty()
-  clientId: string
+  clientId: string;
 
-  @ApiProperty({ description: 'Appointment serviceId' })
+  @ApiProperty({ description: "Appointment serviceId" })
   @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
-  serviceId: number
+  serviceId: number;
 }
 
 export class AppointmentRequestDTO {
-  @ApiProperty({ description: 'Appointment date' })
+  @ApiProperty({ description: "Appointment date" })
   @IsString()
   @IsNotEmpty()
-  date: string
+  date: string;
 
-  @ApiProperty({ description: 'Appointment startTime' })
+  @ApiProperty({ description: "Appointment startTime" })
   @IsString()
   @IsNotEmpty()
-  startTime: string
+  startTime: string;
 
-  @ApiProperty({ description: 'Appointment endTime' })
+  @ApiProperty({ description: "Appointment endTime" })
   @IsString()
   @IsNotEmpty()
-  endTime: string
+  endTime: string;
 
-  @ApiProperty({ description: 'Appointment cancelReason' })
+  @ApiProperty({ description: "Appointment cancelReason" })
   @IsString()
   @IsOptional()
-  cancelReason?: string | null
+  cancelReason?: string | null;
 
-  @ApiProperty({ description: 'Appointment professionalId' })
+  @ApiProperty({ description: "Appointment professionalId" })
   @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
-  professionalId: number
+  professionalId: number;
 
-  @ApiProperty({ description: 'Appointment clientId' })
+  @ApiProperty({ description: "Appointment clientId" })
   @IsString()
   @IsNotEmpty()
-  clientId: string
+  clientId: string;
 
-  @ApiProperty({ description: 'Appointment serviceId' })
+  @ApiProperty({ description: "Appointment serviceId" })
   @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
-  serviceId: number
+  serviceId: number;
 }
 
 export class UpdateAppointmentDTO {
-  @ApiProperty({ description: 'Appointment cancelReason' })
+  @ApiProperty({ description: "Appointment cancelReason" })
   @IsString()
   @IsOptional()
-  cancelReason?: string | null
+  cancelReason?: string | null;
 
   @ApiProperty({
-    description: 'Appointment status',
+    description: "Appointment status",
     enum: AppointmentStatus,
     default: AppointmentStatus.scheduled,
     required: false,
   })
   @IsEnum({ type: AppointmentStatus })
   @IsOptional()
-  status?: AppointmentStatus
+  status?: AppointmentStatus;
 
-  @ApiProperty({ description: 'Appointment confirmAt' })
+  @ApiProperty({ description: "Appointment confirmAt" })
   @IsDate()
   @IsOptional()
-  confirmAt?: Date | null
+  confirmAt?: Date | null;
 }
 
 class ProfessionalDTO {
-  @ApiProperty({ description: 'Professional name' })
+  @ApiProperty({ description: "Professional name" })
   @IsString()
   @IsNotEmpty()
-  name: string
+  name: string;
 }
 
 class ServiceDTO {
-  @ApiProperty({ description: 'service name' })
+  @ApiProperty({ description: "service name" })
   @IsString()
   @IsNotEmpty()
-  name: string
+  name: string;
 }
 
 export class FindAllAppointments extends AppointmentDTO {
-  client: ClientDTO
-  professional: ProfessionalDTO
-  serivce: ServiceDTO
+  client: ClientDTO;
+  professional: ProfessionalDTO;
+  serivce: ServiceDTO;
 }
 
 export class FindAppointmentsQueryDTO {
-  @ApiProperty({ description: 'Appointment date' })
+  @ApiProperty({ description: "Appointment date" })
   @IsString()
   @IsOptional()
-  date: string
+  date: string;
 
   @ApiProperty({
-    description: 'Appointment status',
+    description: "Appointment status",
     enum: AppointmentStatus,
     default: AppointmentStatus.scheduled,
     required: false,
   })
   @IsEnum({ type: AppointmentStatus })
   @IsOptional()
-  status?: AppointmentStatus
+  status?: AppointmentStatus;
 
-  @ApiProperty({ description: 'Appointment confirmAt' })
+  @ApiProperty({ description: "Appointment confirmAt" })
   @IsDate()
   @IsOptional()
-  confirmAt?: Date | null
+  confirmAt?: Date | null;
 
-  @ApiProperty({ description: 'Appointment createAt' })
+  @ApiProperty({ description: "Appointment createAt" })
   @IsDate()
   @IsOptional()
-  createdAt: Date
+  createdAt: Date;
 }
