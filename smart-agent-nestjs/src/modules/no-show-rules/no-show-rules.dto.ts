@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { NoShowAction } from '@prisma/client'
+import { Type } from 'class-transformer'
 import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsUUID } from 'class-validator'
 
 export class NoShowRuleDTO {
@@ -10,6 +11,7 @@ export class NoShowRuleDTO {
 
   @ApiProperty({ description: 'no show rule createAt' })
   @IsNotEmpty()
+  @Type(() => Number)
   @IsNumber()
   id: number
 
@@ -20,6 +22,7 @@ export class NoShowRuleDTO {
 
   @ApiProperty({ description: 'no show rule createAt' })
   @IsNotEmpty()
+  @Type(() => Number)
   @IsNumber()
   maxRatePercent: number | null
 
@@ -30,13 +33,14 @@ export class NoShowRuleDTO {
     required: false,
   })
   @IsOptional()
-  @IsEnum({ type: NoShowAction })
+  @IsEnum(NoShowAction)
   action?: NoShowAction = NoShowAction.block_booking
 }
 
 export class NoShowRuleRequestDTO {
   @ApiProperty({ description: 'no show rule createAt' })
   @IsNotEmpty()
+  @Type(() => Number)
   @IsNumber()
   maxRatePercent: number | null
 
@@ -47,13 +51,14 @@ export class NoShowRuleRequestDTO {
     required: false,
   })
   @IsOptional()
-  @IsEnum({ type: NoShowAction })
+  @IsEnum(NoShowAction)
   action?: NoShowAction = NoShowAction.block_booking
 }
 
 export class UpdateNoShowRuleRequestDTO {
   @ApiProperty({ description: 'no show rule createAt' })
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   maxRatePercent: number | null
 
@@ -64,6 +69,6 @@ export class UpdateNoShowRuleRequestDTO {
     required: false,
   })
   @IsOptional()
-  @IsEnum({ type: NoShowAction })
+  @IsEnum(NoShowAction)
   action?: NoShowAction = NoShowAction.block_booking
 }

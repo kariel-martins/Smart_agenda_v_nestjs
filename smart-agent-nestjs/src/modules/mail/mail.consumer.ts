@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common'
 import { EventPattern, Payload } from '@nestjs/microservices'
-import { SEND_PASSWORD_RESET } from 'src/consts'
+import { SEND_CREATE_ACCOUNT, SEND_PASSWORD_RESET } from 'src/consts'
 import { EmailForgotAndResetPasswordDTO } from './mail.dto'
 import { MailService } from './mail.service'
 
@@ -8,7 +8,7 @@ import { MailService } from './mail.service'
 export class MailConsumer {
   constructor(private mailer: MailService) {}
 
-  @EventPattern(SEND_PASSWORD_RESET)
+  @EventPattern(SEND_CREATE_ACCOUNT)
   async handleCreateAccount(
     @Payload() data: { pathRoute: string; data: { email: string; subject: string } },
   ) {
@@ -16,7 +16,7 @@ export class MailConsumer {
   }
 
   @EventPattern(SEND_PASSWORD_RESET)
-  async handleResetPasswored(@Payload() data: EmailForgotAndResetPasswordDTO) {
+  async handleResetPassword(@Payload() data: EmailForgotAndResetPasswordDTO) {
     await this.mailer.sendResetPassword(data)
   }
 }

@@ -4,6 +4,7 @@ import { ExecuteHandler } from 'src/common/handlers/execute.handler'
 import { RequestContextService } from 'src/common/services/request-context/request-context.service'
 import { PrismaService } from 'src/prisma.service'
 import { paginate, paginateOutput } from 'src/utils/pagination.utils'
+import { JobsService } from '../jobs/jobs.service'
 import {
   findQueryProfessionalDTO,
   ProfessionalDTO,
@@ -17,6 +18,7 @@ export class ProfessionalService {
     private readonly prisma: PrismaService,
     private readonly execute: ExecuteHandler,
     private readonly RequestContext: RequestContextService,
+    private readonly jobService: JobsService,
   ) {}
 
   create(data: ProfessionalRequestDTO) {
@@ -36,11 +38,15 @@ export class ProfessionalService {
   findAll(query?: QueryPaginationDTO, params?: findQueryProfessionalDTO) {
     return this.execute.repository(async () => {
       const user = this.RequestContext.getUser()
-      const result = await this.prisma.professional.findMany({
+      const professionals = await this.prisma.professional.findMany({
         ...paginate(query),
         where: {
           businessId: user.businessId,
           ...params,
+        },
+        include: {
+          availabilities: true,
+          appointments: true,
         },
       })
 
@@ -50,6 +56,12 @@ export class ProfessionalService {
         },
       })
 
+      const now = new Date()
+
+      const result = professionals.map((prof) => ({
+        ...prof,
+        isActive: this.jobService.calculateAvailability(prof, now),
+      }))
       return paginateOutput<ProfessionalDTO>(result, total, query)
     }, 'Não há proficionais disponíveis!')
   }
@@ -62,9 +74,31 @@ export class ProfessionalService {
           businessId: user.businessId,
           id: professionalId,
         },
+        include: {
+          availabilities: true,
+          appointments: {
+            include: {
+              client: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          service: {
+            select: {
+              service: true,
+            },
+          },
+        },
       })
 
-      return result
+      const now = new Date()
+
+      return {
+        ...result,
+        isActive: this.jobService.calculateAvailability(result, now),
+      }
     }, 'Não foi buscar o proficional!')
   }
 

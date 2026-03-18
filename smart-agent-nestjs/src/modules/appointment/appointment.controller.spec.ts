@@ -56,8 +56,9 @@ describe('AppointmentController', () => {
     it('should update appointment to confirmed', async () => {
       await controller.confirm(1)
 
-      expect(service.update).toHaveBeenCalledWith(1, {
+      expect(service.updateStatus).toHaveBeenCalledWith(1, {
         status: 'confirmed',
+        confirmAt: new Date(),
       })
     })
   })
@@ -66,7 +67,7 @@ describe('AppointmentController', () => {
     it('should update appointment to completed', async () => {
       await controller.complete(1)
 
-      expect(service.update).toHaveBeenCalledWith(1, {
+      expect(service.updateStatus).toHaveBeenCalledWith(1, {
         status: 'completed',
       })
     })
@@ -78,7 +79,7 @@ describe('AppointmentController', () => {
 
       await controller.cancel(1, dto)
 
-      expect(service.update).toHaveBeenCalledWith(1, {
+      expect(service.updateStatus).toHaveBeenCalledWith(1, {
         status: 'canceled',
         ...dto,
       })
@@ -91,7 +92,7 @@ describe('AppointmentController', () => {
 
       await controller.NoShow(1, dto)
 
-      expect(service.update).toHaveBeenCalledWith(1, {
+      expect(service.updateStatus).toHaveBeenCalledWith(1, {
         status: 'no_show',
         ...dto,
       })

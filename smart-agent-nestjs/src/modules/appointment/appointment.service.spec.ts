@@ -127,7 +127,7 @@ describe('AppointmentService', () => {
 
       jest.spyOn(prisma.appointment, 'update').mockResolvedValue(updated as any)
 
-      const result = await service.update(1, { status: 'confirmed' } as any)
+      const result = await service.updateStatus(1, { status: 'confirmed' } as any)
 
       expect(prisma.appointment.update).toHaveBeenCalledWith({
         where: {
@@ -146,7 +146,7 @@ describe('AppointmentService', () => {
       jest.spyOn(prisma.appointment, 'update').mockRejectedValue(new Error())
 
       await expect(
-        service.update(1, { status: 'confirmed' } as any),
+        service.updateStatus(1, { status: 'confirmed' } as any),
       ).rejects.toThrow()
     })
   })
