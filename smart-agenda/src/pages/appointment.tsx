@@ -34,7 +34,7 @@ const FILTER_OPTIONS: { label: string; value: AppointmentStatus | "all" }[] = [
 ];
 
 type PendingAction = {
-  type: AppointmentStatusRequest
+  type: AppointmentStatusRequest;
   appt: Appointment;
 } | null;
 
@@ -46,7 +46,9 @@ export function Appointment() {
 
   const appointments = Array.isArray(data?.data) ? data.data : [];
 
-  const [statusFilter, setStatusFilter] = useState<AppointmentStatus | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<AppointmentStatus | "all">(
+    "all",
+  );
   const [showCreate, setShowCreate] = useState(false);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [error, setError] = useState<{ message: string } | null>(null);
@@ -58,7 +60,6 @@ export function Appointment() {
 
   async function handleCreate(form: AppointmentForm) {
     setError(null);
-
     try {
       await appointmentCreate({
         date: form.date,
@@ -68,10 +69,17 @@ export function Appointment() {
         clientId: form.clientId,
         serviceId: Number(form.serviceId),
       });
-
       setShowCreate(false);
     } catch (error: any) {
-      setError(errorResponce(error.status));
+       const backendMessage = error.response?.data?.message;
+      const status = error.response?.status;
+
+      if (backendMessage) {
+        setError({ message: backendMessage });
+      } else {
+       
+        setError(errorResponce(status));
+      }
       setShowCreate(false);
     }
   }
@@ -81,38 +89,53 @@ export function Appointment() {
     appt: Appointment,
   ) {
     setError(null);
-
     try {
-
-      await appointmentUpdate({
-        id: appt.id,
-        status: action,
-      });
-
+      await appointmentUpdate({ id: appt.id, status: action });
       setPendingAction(null);
     } catch (error: any) {
-      setError(errorResponce(error.status));
+       const backendMessage = error.response?.data?.message;
+      const status = error.response?.status;
+
+      if (backendMessage) {
+        setError({ message: backendMessage });
+      } else {
+       
+        setError(errorResponce(status));
+      }
       setPendingAction(null);
     }
   }
 
   async function applyCancel(reason: string) {
     if (!pendingAction) return;
-
     setError(null);
-
     try {
       const { appt } = pendingAction;
 
-      await appointmentUpdate({
-        id: appt.id,
-        status: 'cancel',
-        cancelReason: reason,
-      });
-
+      if (pendingAction.type === "cancel") {
+        await appointmentUpdate({
+          id: appt.id,
+          status: "cancel",
+          cancelReason: reason,
+        });
+      } else if (pendingAction.type === "no_show") {
+        await appointmentUpdate({
+          id: appt.id,
+          status: "no-show",
+          cancelReason: reason,
+        });
+      }
       setPendingAction(null);
     } catch (error: any) {
-      setError(errorResponce(error.status));
+      const backendMessage = error.response?.data?.message;
+      const status = error.response?.status;
+
+      if (backendMessage) {
+        setError({ message: backendMessage });
+      } else {
+       
+        setError(errorResponce(status));
+      }
       setPendingAction(null);
     }
   }
@@ -126,18 +149,16 @@ export function Appointment() {
       <div className="w-full pt-24 pb-12 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row gap-8">
-
+            {/* Sidebar filtros */}
             <aside className="w-full md:w-60 shrink-0">
               <div className="sticky top-24">
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-
                   <div className="flex items-center gap-2 mb-5 text-gray-900">
                     <Filter className="h-4 w-4" />
                     <h2 className="font-bold text-sm uppercase tracking-tight">
                       Status
                     </h2>
                   </div>
-
                   <div className="space-y-1">
                     {FILTER_OPTIONS.map((opt) => (
                       <button
@@ -150,25 +171,25 @@ export function Appointment() {
                         }`}
                       >
                         {opt.label}
-
                         <span className="text-xs text-gray-400">
-                          {opt.value === "all"
-                            ? appointments.length
-                            : appointments.filter(
-                                (a) => a.status === opt.value
-                              ).length}
+                          {isLoading ? (
+                            <span className="inline-block h-3 w-4 bg-gray-200 rounded animate-pulse" />
+                          ) : opt.value === "all" ? (
+                            appointments.length
+                          ) : (
+                            appointments.filter((a) => a.status === opt.value)
+                              .length
+                          )}
                         </span>
                       </button>
                     ))}
                   </div>
-
                 </div>
               </div>
             </aside>
 
             <main className="flex-1">
               <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-
                 <div>
                   <div className="flex items-center gap-2 text-blue-600 mb-1">
                     <CalendarDays className="h-5 w-5" />
@@ -176,12 +197,10 @@ export function Appointment() {
                       <Clock />
                     </span>
                   </div>
-
                   <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
                     Agendamentos
                   </h1>
                 </div>
-
                 <Button
                   onClick={() => setShowCreate(true)}
                   className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 shadow-lg shadow-blue-200 hover:scale-105 transition-transform"
@@ -189,15 +208,35 @@ export function Appointment() {
                   <Plus className="h-4 w-4 mr-2" />
                   Novo Agendamento
                 </Button>
-
               </header>
 
+              {/* Skeleton */}
               {isLoading && (
-                <div className="text-center py-10 text-gray-500">
-                  Carregando agendamentos...
+                <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="bg-white rounded-2xl border border-gray-100 p-5 animate-pulse"
+                    >
+                      <div className="flex justify-between mb-4">
+                        <div className="h-4 bg-gray-200 rounded w-1/2" />
+                        <div className="h-5 bg-gray-100 rounded-full w-20" />
+                      </div>
+                      <div className="space-y-2 mb-4">
+                        <div className="h-3 bg-gray-100 rounded w-3/4" />
+                        <div className="h-3 bg-gray-100 rounded w-2/3" />
+                        <div className="h-3 bg-gray-100 rounded w-1/2" />
+                      </div>
+                      <div className="flex gap-2 mt-4">
+                        <div className="h-8 bg-gray-100 rounded-lg flex-1" />
+                        <div className="h-8 bg-gray-100 rounded-lg flex-1" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
 
+              {/* Lista */}
               {!isLoading && filtered.length > 0 && (
                 <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                   {filtered.map((appt) => (
@@ -212,6 +251,7 @@ export function Appointment() {
                 </div>
               )}
 
+              {/* Empty state */}
               {!isLoading && filtered.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border-2 border-dashed border-gray-200">
                   <CalendarDays className="h-10 w-10 text-gray-200 mb-3" />
@@ -224,7 +264,6 @@ export function Appointment() {
                 </div>
               )}
             </main>
-
           </div>
         </div>
       </div>
@@ -254,8 +293,8 @@ export function Appointment() {
             onClose={() => setPendingAction(null)}
             onConfirm={() =>
               applyAction(
-                pendingAction.type as ("confirm" | "complete"),
-                pendingAction.appt
+                pendingAction.type as "confirm" | "complete",
+                pendingAction.appt,
               )
             }
           />

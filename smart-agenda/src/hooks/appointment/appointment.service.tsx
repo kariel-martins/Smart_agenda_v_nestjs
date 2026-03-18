@@ -19,7 +19,9 @@ export class AppointmentService {
   }
 
   async update(data: UpdateAppointmentData) {
-    const result = await axiosInstance.patch<Appointment>(`/appointments/${data.id}/${data.status}`)
+    const { id, status, ...rest} = data
+    console.log(data)
+    const result = await axiosInstance.patch<Appointment>(`/appointments/${id}/${status}`, rest)
     return result.data
   }
 }

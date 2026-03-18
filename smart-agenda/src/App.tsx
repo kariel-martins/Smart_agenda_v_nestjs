@@ -8,36 +8,68 @@ import { Register } from "./pages/register";
 import { Login } from "./pages/login";
 import { BusinessProfile } from "./pages/BusinessProfile";
 import { Users } from "./pages/Users";
-import { Services } from "./pages/Services";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./contexts/AuthContext";
-import { ProfessionalProfile } from "./pages/perfil";
+import { ProfessionalProfile } from "./pages/professional-profile";
+import { ForgotPassword } from "./pages/forgotPassword";
+import { useUnauthorized } from "./components/useUnauthorized";
+import { UnauthorizedOverlay } from "./components/UnauthorizedOverlay";
+import { RegisterSuccess } from "./pages/registerSuccess";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error: any) => {
+        const status = error?.response?.status ?? error?.status;
+        if (status === 401 || status === 403) return false;
+        return failureCount < 2;
+      },
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: false,
+    },
+  },
+});
 
-function App() {
+function AppRoutes() {
+  const isUnauthorized = useUnauthorized();
+
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
+      {isUnauthorized && <UnauthorizedOverlay />}
       <AuthProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Appointment />} />
-            <Route path="/servicos" element={<Services />} />
             <Route path="/clientes" element={<Customers />} />
             <Route path="/profissionais" element={<Professionals />} />
             <Route path="/no-show-rules" element={<NoShowRules />} />
-            <Route path="/profile-professional/:id" element={<ProfessionalProfile />} />
+            <Route
+              path="/profile-professional/:id"
+              element={<ProfessionalProfile />}
+            />
             <Route
               path="/availability"
               element={<ProfessionalAvailability />}
             />
             <Route path="/register" element={<Register />} />
+            <Route path="/cadastro-sucesso" element={<RegisterSuccess />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/login" element={<Login />} />
             <Route path="/business-profile" element={<BusinessProfile />} />
             <Route path="/users" element={<Users />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
+    </>
+  );
+}
+
+function App() {
+   return (
+    <QueryClientProvider client={queryClient}>
+      <AppRoutes />
     </QueryClientProvider>
   );
 }

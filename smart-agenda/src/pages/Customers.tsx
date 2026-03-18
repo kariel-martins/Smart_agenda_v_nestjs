@@ -21,18 +21,17 @@ export function Customers() {
   const { mutateAsync: clientUpdate } = useClientUpdate();
   const { mutateAsync: clientDelete } = useClientDelete();
 
-  
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState<Client | null | "new">(null);
   const [delTarget, setDelTarget] = useState<Client | null>(null);
   const [error, setError] = useState<{ message: string } | null>(null);
-  const [numPage, setNumPage] = useState<number>(1)
-  
-  const { data, isLoading} = useClientFindAll({
+  const [numPage, setNumPage] = useState<number>(1);
+
+  const { data, isLoading } = useClientFindAll({
     page: numPage,
-    size: 10
-  })
-  
+    size: 10,
+  });
+
   const clients = Array.isArray(data?.data) ? data.data : [];
   const filtered = clients.filter(
     (c) =>
@@ -81,7 +80,11 @@ export function Customers() {
               Clientes
             </h1>
             <p className="text-gray-500">
-              {data?.meta.total} clientes na sua base.
+              {isLoading ? (
+                <span className="inline-block h-4 w-40 bg-gray-200 rounded animate-pulse" />
+              ) : (
+                <>{data?.meta.total} clientes na sua base.</>
+              )}
             </p>
           </div>
           <Button
@@ -131,18 +134,48 @@ export function Customers() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((c) => (
-                  <ClientRow
-                    key={c.id}
-                    data={c}
-                    onEdit={(c) => setModal(c)}
-                    onDelete={(c) => setDelTarget(c)}
-                  />
-                ))}
-                { filtered.length === 0 && (
+                {isLoading
+                  ? Array.from({ length: 5 }).map((_, i) => (
+                      <tr key={i} className="border-b border-gray-100">
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-3 animate-pulse">
+                            <div className="h-9 w-9 rounded-full bg-gray-200 shrink-0" />
+                            <div className="space-y-1.5">
+                              <div className="h-3 bg-gray-200 rounded w-32" />
+                              <div className="h-2.5 bg-gray-100 rounded w-24" />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 hidden md:table-cell">
+                          <div className="h-3 bg-gray-200 rounded w-24 animate-pulse" />
+                        </td>
+                        <td className="py-4 px-4 hidden lg:table-cell">
+                          <div className="h-3 bg-gray-100 rounded w-8 animate-pulse" />
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="h-3 bg-gray-100 rounded w-8 animate-pulse" />
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="h-5 bg-gray-200 rounded-full w-16 animate-pulse" />
+                        </td>
+                        <td className="py-4 px-4" />
+                      </tr>
+                    ))
+                  : filtered.map((c) => (
+                      <ClientRow
+                        key={c.id}
+                        data={c}
+                        onEdit={(c) => setModal(c)}
+                        onDelete={(c) => setDelTarget(c)}
+                      />
+                    ))}
+                {!isLoading && filtered.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="py-16 text-center text-gray-400">
-                      {isLoading ? "Carregando" : search
+                    <td
+                      colSpan={6}
+                      className="py-16 text-center text-gray-400"
+                    >
+                      {search
                         ? `Nenhum resultado para "${search}"`
                         : "Nenhum cliente cadastrado."}
                     </td>
@@ -153,13 +186,31 @@ export function Customers() {
           </div>
           <div className="p-4 border-t border-gray-100 bg-gray-50/30 flex items-center justify-between">
             <span className="text-sm text-gray-500">
-              page { data?.meta.currentPage} de { data?.meta.lastPage}
+              {isLoading ? (
+                <span className="inline-block h-3 w-24 bg-gray-200 rounded animate-pulse" />
+              ) : (
+                <>
+                  página {data?.meta.currentPage} de {data?.meta.lastPage}
+                </>
+              )}
             </span>
             <div className="flex gap-2">
-              <Button onClick={() => setNumPage((prev) => prev -1)} variant="outline" size="sm" disabled={numPage <= 1} className="bg-white">
+              <Button
+                onClick={() => setNumPage((prev) => prev - 1)}
+                variant="outline"
+                size="sm"
+                disabled={numPage <= 1 || isLoading}
+                className="bg-white"
+              >
                 Anterior
               </Button>
-              <Button onClick={() => setNumPage((prev) => prev +1)} variant="outline" size="sm" disabled={numPage >= (data?.meta.lastPage ?? 1)} className="bg-white">
+              <Button
+                onClick={() => setNumPage((prev) => prev + 1)}
+                variant="outline"
+                size="sm"
+                disabled={numPage >= (data?.meta.lastPage ?? 1) || isLoading}
+                className="bg-white"
+              >
                 Próximo
               </Button>
             </div>

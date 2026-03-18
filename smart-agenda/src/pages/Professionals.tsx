@@ -31,9 +31,9 @@ export function Professionals() {
   const { mutateAsync: professionalUpdate } = UseProfessionalUpdate();
   const { mutateAsync: professionalDelete } = UseProfessionalDelete();
 
-  const {data} = useProfessionalFindAll()
+  const { data, isLoading } = useProfessionalFindAll();
 
-  const professionals = Array.isArray(data?.data) ? data.data : []
+  const professionals = Array.isArray(data?.data) ? data.data : [];
   const [search, setSearch] = useState("");
   const [filterActive, setFilterActive] = useState<boolean | null>(null);
   const [modal, setModal] = useState<Professional | null | "new">(null);
@@ -60,9 +60,8 @@ export function Professionals() {
       }
     } else {
       try {
-         await professionalCreate(form);
+        await professionalCreate(form);
       } catch (error: any) {
-        console.log(error.response.status);
         setError(errorResponce(error.status));
       }
     }
@@ -71,7 +70,7 @@ export function Professionals() {
 
   async function handleDelete() {
     if (!delTarget) return;
-    setError(null)
+    setError(null);
     try {
       await professionalDelete(delTarget.id);
       setDelTarget(null);
@@ -91,14 +90,14 @@ export function Professionals() {
           {[
             {
               label: "Profissionais Ativos",
-              value: String(totalActive),
+              value: isLoading ? null : String(totalActive),
               icon: CheckCircle,
               color: "text-green-600",
               bg: "bg-green-100",
             },
             {
               label: "Total na Equipe",
-              value: String(professionals.length),
+              value: isLoading ? null : String(professionals.length),
               icon: Users,
               color: "text-blue-600",
               bg: "bg-blue-100",
@@ -113,7 +112,11 @@ export function Professionals() {
               </div>
               <div>
                 <p className="text-sm text-gray-500 font-medium">{s.label}</p>
-                <p className="text-2xl font-bold text-gray-900">{s.value}</p>
+                {s.value === null ? (
+                  <div className="h-7 w-10 bg-gray-200 rounded animate-pulse mt-1" />
+                ) : (
+                  <p className="text-2xl font-bold text-gray-900">{s.value}</p>
+                )}
               </div>
             </div>
           ))}
@@ -139,7 +142,6 @@ export function Professionals() {
                 className="pl-10 w-64 bg-white border-none shadow-sm h-11"
               />
             </div>
-            {/* isActive filter → query param GET /v1/profissionais?isActive=true */}
             <Button
               variant="outline"
               onClick={() =>
@@ -151,7 +153,13 @@ export function Professionals() {
                       : null,
                 )
               }
-              className={`h-11 rounded-xl px-4 gap-2 border-none shadow-sm ${filterActive === true ? "bg-green-50 text-green-700" : filterActive === false ? "bg-gray-100 text-gray-500" : "bg-white"}`}
+              className={`h-11 rounded-xl px-4 gap-2 border-none shadow-sm ${
+                filterActive === true
+                  ? "bg-green-50 text-green-700"
+                  : filterActive === false
+                    ? "bg-gray-100 text-gray-500"
+                    : "bg-white"
+              }`}
             >
               {filterActive === true ? (
                 <ToggleRight className="h-4 w-4" />
@@ -176,27 +184,53 @@ export function Professionals() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filtered.map((p) => (
-            <ProfessionalCard
-              key={p.id}
-              data={p}
-              onEdit={(p) => setModal(p)}
-              onDelete={(p) => setDelTarget(p)}
-              onAvailability={(p) =>
-                (window.location.href = `/profissionais/${p.id}/profile-professional/:id`)
-              }
-            />
-          ))}
-          <div
-            onClick={() => setModal("new")}
-            className="border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center p-8 text-center bg-gray-50/30 hover:bg-blue-50/30 hover:border-blue-200 transition-all cursor-pointer group"
-          >
-            <div className="bg-white p-3 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform">
-              <UserPlus className="h-6 w-6 text-gray-400 group-hover:text-blue-500" />
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-2xl border border-gray-100 p-6 animate-pulse"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-12 w-12 rounded-xl bg-gray-200 shrink-0" />
+                    <div className="space-y-2 flex-1">
+                      <div className="h-3.5 bg-gray-200 rounded w-3/4" />
+                      <div className="h-3 bg-gray-100 rounded w-1/2" />
+                    </div>
+                  </div>
+                  <div className="h-3 bg-gray-100 rounded w-full mb-2" />
+                  <div className="h-3 bg-gray-100 rounded w-2/3 mb-4" />
+                  <div className="flex gap-2">
+                    <div className="h-8 bg-gray-100 rounded-lg flex-1" />
+                    <div className="h-8 bg-gray-100 rounded-lg w-8" />
+                  </div>
+                </div>
+              ))
+            : filtered.map((p) => (
+                <ProfessionalCard
+                  key={p.id}
+                  data={p}
+                  onEdit={(p) => setModal(p)}
+                  onDelete={(p) => setDelTarget(p)}
+                  onAvailability={(p) =>
+                    (window.location.href = `/profissionais/${p.id}/profile-professional/:id`)
+                  }
+                />
+              ))}
+
+          {!isLoading && (
+            <div
+              onClick={() => setModal("new")}
+              className="border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center p-8 text-center bg-gray-50/30 hover:bg-blue-50/30 hover:border-blue-200 transition-all cursor-pointer group"
+            >
+              <div className="bg-white p-3 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform">
+                <UserPlus className="h-6 w-6 text-gray-400 group-hover:text-blue-500" />
+              </div>
+              <p className="font-bold text-gray-900 text-sm">
+                Adicionar Membro
+              </p>
+              <p className="text-xs text-gray-400 mt-1">Expanda sua equipe</p>
             </div>
-            <p className="font-bold text-gray-900 text-sm">Adicionar Membro</p>
-            <p className="text-xs text-gray-400 mt-1">Expanda sua equipe</p>
-          </div>
+          )}
         </div>
       </main>
 

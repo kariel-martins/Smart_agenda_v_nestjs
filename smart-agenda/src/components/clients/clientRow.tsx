@@ -2,20 +2,23 @@ import { AlertTriangle, Mail, MoreHorizontal, Pencil, Phone, Trash2 } from "luci
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import type { Client } from "@/hooks/clients/dtos/client.dto.type";
+import type { Client, ClientWithAppointment } from "@/hooks/clients/dtos/client.dto.type";
 
 export function ClientRow({
   data,
   onEdit,
   onDelete,
 }: {
-  data: Client;
+  data: ClientWithAppointment;
   onEdit: (c: Client) => void;
   onDelete: (c: Client) => void;
 }) {
-  const noShowCount = data.noShowCount ?? 0;
-  const totalAppointments = data.totalAppointments ?? 0;
-  const isRisky = noShowCount >= 2;
+
+  const appointments = data.appointments ?? []
+
+  const noShowCount = appointments.filter((a) => a.status === "no_show").length
+  const totalAppointments = appointments.length
+  const isRisky = noShowCount >= 2; // TODO - será posto as regras de no show
 
   return (
     <tr className="group hover:bg-blue-50/30 transition-colors border-b border-gray-100 last:border-none">

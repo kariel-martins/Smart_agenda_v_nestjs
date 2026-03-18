@@ -1,4 +1,6 @@
-export type Client = {
+import type { AppointmentStatus } from "@/hooks/appointment/dtos/appointment.dto.types";
+
+export interface Client {
   name: string;
   phone: string;
   email: string;
@@ -39,8 +41,16 @@ export type FindQueryClientData = {
 
 export type ClientForm = Pick<Client, "name" | "phone" | "email">;
 
-export type ClientFindAll = {
-  data: [Client];
+interface Appointment {
+  status: AppointmentStatus
+}
+
+export interface ClientWithAppointment extends Client {
+  appointments: Appointment[]
+}
+
+export type ClientWithAppointmentFindAll = {
+  data: ClientWithAppointment[];
   meta: metaType;
 };
 

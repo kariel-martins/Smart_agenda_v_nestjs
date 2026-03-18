@@ -25,6 +25,7 @@ export function useServiceCreate() {
     mutationFn: service.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["services"] });
+      queryClient.invalidateQueries({ queryKey: ["professional"] });
     },
   });
 }
@@ -36,6 +37,7 @@ export function useServiceUpdate() {
     mutationFn: service.update,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["services"] });
+      queryClient.invalidateQueries({ queryKey: ["professional"] });
     },
   });
 }
@@ -47,6 +49,7 @@ export function useServiceRemove() {
     mutationFn: service.remove,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["services"] });
+      queryClient.invalidateQueries({ queryKey: ["professional"] });
     },
   });
 }

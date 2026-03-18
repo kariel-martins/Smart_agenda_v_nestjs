@@ -3,18 +3,15 @@ import { Link, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, LogIn } from "lucide-react";
-import { loginMutate } from "@/hooks/auth/auth.mutate";
-import { UseAuth } from "@/contexts/AuthContext";
+import { useForgotPassword } from "@/hooks/auth/auth.mutate";
 import { errorResponce } from "@/Errors/errors";
 import { ErrorMessage } from "@/components/ErrorResponce";
+import { LogIn } from "lucide-react";
 
-export function Login() {
-  const { login: UserLoginDataInsert } = UseAuth();
+export function ForgotPassword() {
   const navigate = useNavigate();
-  const { mutateAsync: login } = loginMutate();
-  const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({ email: "", password: "" });
+  const { mutateAsync: forgotPassword } = useForgotPassword();
+  const [form, setForm] = useState({ email: ""});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<{ message: string } | null>(null);
 
@@ -23,39 +20,20 @@ export function Login() {
     setError(null);
     setLoading(true);
     try {
-      const result = await login(form);
+      const result = await forgotPassword(form);
       if (!result) {
         setLoading(false);
         throw new Error("Error ao efetuar o login");
       }
-      UserLoginDataInsert({
-        name: result.user.name,
-        userId: "sdfgsfg",
-        businessName: result.BusinessName,
-        businessId: result.id,
-        role: result.user.userRole,
-      });
-      navigate("/");
       return result;
     } catch (error: any) {
-      const backendMessage = error.response?.data?.message;
-      const status = error.response?.status;
-
-      if (backendMessage) {
-  
-        setError({ message: backendMessage });
-      } else {
-       
-        setError(errorResponce(status));
-      }
-
-      setLoading(false);
+      setError(errorResponce(error.status));
     }
   }
 
   return (
     <div className="min-h-screen bg-gray-50/50 flex items-center justify-center px-4">
-      {error && <ErrorMessage message={error.message} />}
+      {error && <ErrorMessage message={error?.message} />}
 
       <div className="w-full max-w-md">
         {/* Logo */}
@@ -69,9 +47,9 @@ export function Login() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <h1 className="text-2xl font-extrabold text-gray-900 mb-1">Entrar</h1>
+          <h1 className="text-2xl font-extrabold text-gray-900 mb-1">Esqueceu a senha</h1>
           <p className="text-gray-500 text-sm mb-8">
-            Acesse o painel da sua empresa.
+            Digiter seu email
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -91,47 +69,6 @@ export function Login() {
                 className="h-11 bg-gray-50/50 border-gray-200 focus-visible:ring-blue-500/30"
                 required
               />
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label
-                  htmlFor="password"
-                  className="text-sm font-semibold text-gray-700"
-                >
-                  Senha
-                </Label>
-                <Link
-                  to="/esqueci-senha"
-                  className="text-xs text-blue-600 hover:underline"
-                >
-                  Esqueceu a senha?
-                </Link>
-              </div>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={form.password}
-                  onChange={(e) =>
-                    setForm({ ...form, password: e.target.value })
-                  }
-                  className="h-11 bg-gray-50/50 border-gray-200 pr-10 focus-visible:ring-blue-500/30"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
             </div>
 
             <Button

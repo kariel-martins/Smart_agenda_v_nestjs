@@ -1,8 +1,8 @@
 import { axiosInstance } from "@/lib/axios";
 import type {
   Client,
-  ClientFindAll,
   ClientRequestData,
+  ClientWithAppointmentFindAll,
   findAllData,
   UpdateClientRequestData,
 } from "./dtos/client.dto.type";
@@ -19,7 +19,7 @@ export class clientservice {
   }
 
   async findAll(params?: findAllData) {
-    const result = await axiosInstance.get<ClientFindAll>("/clients", {
+    const result = await axiosInstance.get<ClientWithAppointmentFindAll>("/clients", {
       params: {
         ...params,
       },
