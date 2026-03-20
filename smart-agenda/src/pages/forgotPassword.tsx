@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +9,6 @@ import { ErrorMessage } from "@/components/ErrorResponce";
 import { LogIn } from "lucide-react";
 
 export function ForgotPassword() {
-  const navigate = useNavigate();
   const { mutateAsync: forgotPassword } = useForgotPassword();
   const [form, setForm] = useState({ email: ""});
   const [loading, setLoading] = useState(false);
@@ -20,7 +19,7 @@ export function ForgotPassword() {
     setError(null);
     setLoading(true);
     try {
-      const result = await forgotPassword(form);
+      const result = await forgotPassword(form.email);
       if (!result) {
         setLoading(false);
         throw new Error("Error ao efetuar o login");
