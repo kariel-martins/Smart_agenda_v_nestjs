@@ -35,7 +35,7 @@ export function Login() {
         businessId: result.id,
         role: result.user.userRole,
       });
-      navigate("/");
+      navigate("/appointment");
       return result;
     } catch (error: any) {
       const backendMessage = error.response?.data?.message;

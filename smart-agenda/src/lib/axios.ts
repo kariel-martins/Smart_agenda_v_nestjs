@@ -72,17 +72,18 @@ async function refreshTokens(): Promise<void> {
     isRefreshing = false;
   }
 }
+const backend_url = import.meta.env.VITE_API_URL
 
 export const axiosInstance = axios.create({
-  baseURL: "http://localhost:3000/v1",
+  baseURL: backend_url,
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
 
 axiosInstance.interceptors.request.use(async (config) => {
   if (config.url?.includes("/auth/refresh")) return config;
-  if (config.url?.includes("/auth/login")) return config;
-  if (config.url?.includes("/auth/register")) return config;
+  if (config.url?.includes("/auth/signin")) return config;
+  if (config.url?.includes("/auth/signup")) return config;
 
   const token = getAccessTokenFromCookie();
 
@@ -110,7 +111,7 @@ axiosInstance.interceptors.response.use(
 
     if (
       originalRequest.url?.includes("/auth/refresh") ||
-      originalRequest.url?.includes("/auth/login")
+      originalRequest.url?.includes("/auth/signin")
     ) {
       return Promise.reject(error);
     }

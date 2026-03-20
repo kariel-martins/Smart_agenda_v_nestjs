@@ -15,6 +15,7 @@ import { ForgotPassword } from "./pages/forgotPassword";
 import { useUnauthorized } from "./components/useUnauthorized";
 import { UnauthorizedOverlay } from "./components/UnauthorizedOverlay";
 import { RegisterSuccess } from "./pages/registerSuccess";
+import { LandingPage } from "./pages/landingPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,7 +42,8 @@ function AppRoutes() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Appointment />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/appointment" element={<Appointment />} />
             <Route path="/clientes" element={<Customers />} />
             <Route path="/profissionais" element={<Professionals />} />
             <Route path="/no-show-rules" element={<NoShowRules />} />

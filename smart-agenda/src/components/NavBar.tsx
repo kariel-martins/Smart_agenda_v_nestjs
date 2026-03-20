@@ -11,7 +11,7 @@ import {
 import { UseAuth } from "@/contexts/AuthContext";
 
 const NAV_LINKS = [
-  { to: "/", label: "Agendamentos", exact: true },
+  { to: "/appointment", label: "Agendamentos", exact: true },
   { to: "/clientes", label: "Clientes" },
   { to: "/profissionais", label: "Profissionais" },
 ];
