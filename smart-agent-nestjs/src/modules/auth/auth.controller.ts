@@ -46,13 +46,13 @@ export class AuthController {
     response.cookie("access_token", auth.accessToken, {
       httpOnly: false,
       secure: true, // true em produção (HTTPS)
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: 1000 * 60 * 15, // 15 minutos
     });
     response.cookie("refresh_token", auth.refreshToken, {
       httpOnly: true,
       secure: true, // true em produção (HTTPS)
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: 1000 * 60 * 60 * 24 * 2, // 2 dias
     });
 
@@ -81,14 +81,14 @@ export class AuthController {
     response.cookie("access_token", auth.accessToken, {
       httpOnly: false,
       secure: true, // true em produção (HTTPS)
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: 1000 * 60 * 15, // 15 minutos
     });
 
     response.cookie("refresh_token", auth.refreshToken, {
       httpOnly: true,
       secure: true, // true em produção (HTTPS)
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: 1000 * 60 * 60 * 24 * 2, // 2 dias
     });
 
