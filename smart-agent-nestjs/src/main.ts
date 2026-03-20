@@ -1,26 +1,26 @@
-import { ValidationPipe, VersioningType } from '@nestjs/common'
-import { NestFactory } from '@nestjs/core'
-import { MicroserviceOptions, Transport } from '@nestjs/microservices'
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-import cookieParser from 'cookie-parser'
-import { AppModule } from './app.module'
-import { EMAIL_QUEUE } from './consts'
+import { ValidationPipe, VersioningType } from "@nestjs/common";
+import { NestFactory } from "@nestjs/core";
+import { MicroserviceOptions, Transport } from "@nestjs/microservices";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import cookieParser from "cookie-parser";
+import { AppModule } from "./app.module";
+import { EMAIL_QUEUE } from "./consts";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create(AppModule);
 
   app.enableVersioning({
     type: VersioningType.URI,
-  })
+  });
 
   const config = new DocumentBuilder()
-    .setTitle('Cats example')
-    .setDescription('The cats API description')
-    .setVersion('1.0')
-    .addTag('cats')
-    .build()
-  const documentFactory = () => SwaggerModule.createDocument(app, config)
-  SwaggerModule.setup('docs', app, documentFactory)
+    .setTitle("Cats example")
+    .setDescription("The cats API description")
+    .setVersion("1.0")
+    .addTag("cats")
+    .build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup("docs", app, documentFactory);
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
@@ -29,7 +29,7 @@ async function bootstrap() {
       queue: EMAIL_QUEUE,
       queueOptions: { durable: true },
     },
-  })
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -37,16 +37,16 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
     }),
-  )
+  );
 
-  app.use(cookieParser(process.env.SECRET_KEY_COOKIES))
+  app.use(cookieParser(process.env.SECRET_KEY_COOKIES));
 
   app.enableCors({
-    origin: 'http://localhost:5173',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    origin: process.env.FRONT_END_URL,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
-  })
+  });
 
-  await app.listen(process.env.PORT ?? 3000)
+  await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap()
+bootstrap();
