@@ -32,9 +32,7 @@ import { Clock } from "@/components/Clock";
 import {
   useGoogleCalendarEventCreate,
   useGoogleCalendarEventDelete,
-  useGoogleCalendarStatus,
 } from "@/hooks/google-calendar/google-calendar.mutate";
-import type { GoogleCalendarEvent } from "@/hooks/google-calendar/dtos/google-calendar.dto";
 
 const FILTER_OPTIONS: { label: string; value: AppointmentStatus | "all" }[] = [
   { label: "Todos", value: "all" },

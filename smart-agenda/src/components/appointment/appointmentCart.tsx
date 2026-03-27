@@ -21,7 +21,6 @@ import type {
   Appointment,
   AppointmentStatus,
 } from "@/hooks/appointment/dtos/appointment.dto.types";
-import { useNavigate } from "react-router";
 
 const STATUS_CFG: Record<
   AppointmentStatus,
@@ -64,7 +63,6 @@ export function AppointmentCard({
     appt: Appointment,
   ) => void;
 }) {
-  const navigate = useNavigate();
   const cfg = STATUS_CFG[data.status ?? "scheduled"];
   const status = data.status ?? "scheduled";
 
