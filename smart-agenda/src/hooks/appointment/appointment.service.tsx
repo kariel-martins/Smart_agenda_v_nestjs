@@ -6,6 +6,7 @@ import type {
   AppointmentResponse,
   UpdateAppointmentData,
 } from "./dtos/appointment.dto.types";
+import type { findAllData } from "../clients/dtos/client.dto.type";
 
 export class AppointmentService {
   async create(data: AppointmentRequestData) {
@@ -13,15 +14,19 @@ export class AppointmentService {
     return result.data
   }
 
-  async findAll() {
-    const { data } = await axiosInstance.get<AppointmentResponse>('/appointments');
+  async findAll(params?: findAllData) {
+    const { data } = await axiosInstance.get<AppointmentResponse>('/appointments', {
+      params: {
+        ...params,
+      }
+    });
     return data
   }
 
   async update(data: UpdateAppointmentData) {
     const { id, status, ...rest} = data
-    console.log(data)
     const result = await axiosInstance.patch<Appointment>(`/appointments/${id}/${status}`, rest)
     return result.data
   }
+  
 }

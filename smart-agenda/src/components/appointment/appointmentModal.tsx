@@ -32,6 +32,7 @@ export function AppointmentModal({
     endTime: "",
     professionalId: "",
     clientId: "",
+    clientName: "",
     serviceId: "",
   });
 
@@ -167,7 +168,7 @@ export function AppointmentModal({
                         key={c.id}
                         value={c.name}
                         onSelect={() => {
-                          setForm((p) => ({ ...p, clientId: c.id }));
+                          setForm((p) => ({ ...p, clientId: c.id, clientName: c.name }));
                           setOpenClient(false);
                         }}
                       >

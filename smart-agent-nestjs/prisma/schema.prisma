@@ -33,6 +33,18 @@ enum NoShowAction {
   manual_approval
 }
 
+model GoogleToken {
+  id           String   @id @default(uuid())
+  userId     String   @db.Uuid @map("user_id") @unique
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
 model Business {
   id          String   @id @default(uuid()) @db.Uuid
   name        String   @unique
@@ -65,6 +77,7 @@ model User {
 
   business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   refreshTokens RefreshToken[]
+  googleToken GoogleToken?
 
   @@map("users")
 }
@@ -164,6 +177,8 @@ model Appointment {
   professionalId Int                @map("professional_id")
   clientId       String             @db.Uuid @map("client_id")
   serviceId      Int                @map("service_id")
+  googleEventId  String?            @map("googleEvent_Id")
+  googleHtmlLink  String?
   date           String
   startTime      String             @map("start_time")
   endTime        String             @map("end_time")

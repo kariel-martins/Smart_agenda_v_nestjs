@@ -79,6 +79,16 @@ export class AppointmentDTO {
   @IsNumber()
   @IsNotEmpty()
   serviceId: number;
+
+  @ApiProperty({ description: "Appointment googleEventId" })
+  @IsString()
+  @IsOptional()
+  googleEventId: string | null;
+
+  @ApiProperty({ description: "Appointment googleHtmlLink" })
+  @IsString()
+  @IsOptional()
+  googleHtmlLink: string | null;
 }
 
 export class AppointmentRequestDTO {
@@ -118,6 +128,16 @@ export class AppointmentRequestDTO {
   @IsNumber()
   @IsNotEmpty()
   serviceId: number;
+
+  @ApiProperty({ description: "Appointment googleEventId" })
+  @IsString()
+  @IsOptional()
+  googleEventId: string;
+
+  @ApiProperty({ description: "Appointment googleHtmlLink" })
+  @IsString()
+  @IsOptional()
+  googleHtmlLink: string;
 }
 
 export class UpdateAppointmentDTO {

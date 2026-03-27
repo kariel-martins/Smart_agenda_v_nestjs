@@ -2,6 +2,7 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
+  ExternalLink, // Adicionado para um ícone mais intuitivo
   MoreVertical,
   Scissors,
   UserIcon,
@@ -11,6 +12,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
@@ -19,6 +21,7 @@ import type {
   Appointment,
   AppointmentStatus,
 } from "@/hooks/appointment/dtos/appointment.dto.types";
+import { useNavigate } from "react-router";
 
 const STATUS_CFG: Record<
   AppointmentStatus,
@@ -61,6 +64,7 @@ export function AppointmentCard({
     appt: Appointment,
   ) => void;
 }) {
+  const navigate = useNavigate();
   const cfg = STATUS_CFG[data.status ?? "scheduled"];
   const status = data.status ?? "scheduled";
 
@@ -70,6 +74,13 @@ export function AppointmentCard({
   const canComplete = isActive;
   const canCancel = isActive;
   const canNoShow = isActive;
+
+  // Função para abrir o link externo de forma segura
+  const handleOpenCalendar = () => {
+    if (data.googleHtmlLink) {
+      window.open(data.googleHtmlLink, "_blank", "noopener,noreferrer");
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex flex-col">
@@ -94,15 +105,15 @@ export function AppointmentCard({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 text-gray-400"
+                  className="h-7 w-7 text-gray-400 hover:text-gray-600"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuContent align="end" className="w-56">
                 {canConfirm && (
                   <DropdownMenuItem
-                    className="gap-2 text-green-600"
+                    className="gap-2 text-green-600 focus:text-green-700 focus:bg-green-50"
                     onClick={() => onAction("confirm", data)}
                   >
                     <CheckCircle className="h-4 w-4" />
@@ -118,9 +129,12 @@ export function AppointmentCard({
                     Marcar Finalizado
                   </DropdownMenuItem>
                 )}
+                
+                {(canCancel || canNoShow) && <DropdownMenuSeparator />}
+                
                 {canCancel && (
                   <DropdownMenuItem
-                    className="gap-2 text-red-600"
+                    className="gap-2 text-red-600 focus:text-red-700 focus:bg-red-50"
                     onClick={() => onAction("cancel", data)}
                   >
                     <XCircle className="h-4 w-4" />
@@ -129,12 +143,25 @@ export function AppointmentCard({
                 )}
                 {canNoShow && (
                   <DropdownMenuItem
-                    className="gap-2 text-orange-600"
+                    className="gap-2 text-orange-600 focus:text-orange-700 focus:bg-orange-50"
                     onClick={() => onAction("no_show", data)}
                   >
                     <AlertCircle className="h-4 w-4" />
                     Não Compareceu
                   </DropdownMenuItem>
+                )}
+
+                {data.googleHtmlLink && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="gap-2 text-blue-600 font-medium focus:bg-blue-50 focus:text-blue-700 cursor-pointer"
+                      onClick={handleOpenCalendar}
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Google Calendar
+                    </DropdownMenuItem>
+                  </>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>

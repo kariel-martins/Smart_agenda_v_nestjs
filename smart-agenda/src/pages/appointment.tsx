@@ -1,6 +1,12 @@
 import { NavBar } from "@/components/NavBar";
 import { Button } from "@/components/ui/button";
-import { Plus, CalendarDays, Filter } from "lucide-react";
+import {
+  Plus,
+  CalendarDays,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import type {
   Appointment,
   AppointmentForm,
@@ -23,6 +29,12 @@ import { errorResponce } from "@/Errors/errors";
 import { ErrorMessage } from "@/components/ErrorResponce";
 import { useState } from "react";
 import { Clock } from "@/components/Clock";
+import {
+  useGoogleCalendarEventCreate,
+  useGoogleCalendarEventDelete,
+  useGoogleCalendarStatus,
+} from "@/hooks/google-calendar/google-calendar.mutate";
+import type { GoogleCalendarEvent } from "@/hooks/google-calendar/dtos/google-calendar.dto";
 
 const FILTER_OPTIONS: { label: string; value: AppointmentStatus | "all" }[] = [
   { label: "Todos", value: "all" },
@@ -42,9 +54,21 @@ export function Appointment() {
   const { mutateAsync: appointmentCreate } = useAppointmentCreate();
   const { mutateAsync: appointmentUpdate } = useAppointmentUpdate();
 
-  const { data, isLoading } = useAppointmentFindAll();
+  const { mutateAsync: createCalendarEvent } = useGoogleCalendarEventCreate();
+  const { mutateAsync: deleteEvent } = useGoogleCalendarEventDelete();
+
+  const [numPage, setNumPage] = useState<number>(1);
+  const PAGE_SIZE = 10;
+
+  const { data, isLoading } = useAppointmentFindAll({
+    page: numPage,
+    size: PAGE_SIZE,
+  });
 
   const appointments = Array.isArray(data?.data) ? data.data : [];
+
+  const hasNextPage = appointments.length === PAGE_SIZE;
+  const hasPrevPage = numPage > 1;
 
   const [statusFilter, setStatusFilter] = useState<AppointmentStatus | "all">(
     "all",
@@ -61,6 +85,15 @@ export function Appointment() {
   async function handleCreate(form: AppointmentForm) {
     setError(null);
     try {
+
+      const event = await createCalendarEvent({
+        title: `Agendamento — ${form.clientName}`,
+        startDateTime: `${form.date}T${form.startTime}`,
+        endDateTime: `${form.date}T${form.endTime}`,
+        timeZone: "America/Sao_Paulo",
+      });
+      console.log(event)
+
       await appointmentCreate({
         date: form.date,
         startTime: form.startTime,
@@ -68,18 +101,17 @@ export function Appointment() {
         professionalId: Number(form.professionalId),
         clientId: form.clientId,
         serviceId: Number(form.serviceId),
+        googleEventId: event.id,
+        googleHtmlLink: event.htmlLink
       });
+
       setShowCreate(false);
     } catch (error: any) {
-       const backendMessage = error.response?.data?.message;
+      const backendMessage = error.response?.data?.message;
       const status = error.response?.status;
-
-      if (backendMessage) {
-        setError({ message: backendMessage });
-      } else {
-       
-        setError(errorResponce(status));
-      }
+      setError(
+        backendMessage ? { message: backendMessage } : errorResponce(status),
+      );
       setShowCreate(false);
     }
   }
@@ -93,13 +125,12 @@ export function Appointment() {
       await appointmentUpdate({ id: appt.id, status: action });
       setPendingAction(null);
     } catch (error: any) {
-       const backendMessage = error.response?.data?.message;
+      const backendMessage = error.response?.data?.message;
       const status = error.response?.status;
 
       if (backendMessage) {
         setError({ message: backendMessage });
       } else {
-       
         setError(errorResponce(status));
       }
       setPendingAction(null);
@@ -109,6 +140,7 @@ export function Appointment() {
   async function applyCancel(reason: string) {
     if (!pendingAction) return;
     setError(null);
+
     try {
       const { appt } = pendingAction;
 
@@ -118,12 +150,15 @@ export function Appointment() {
           status: "cancel",
           cancelReason: reason,
         });
+
+       appt.googleEventId && await deleteEvent(appt.googleEventId)
       } else if (pendingAction.type === "no_show") {
         await appointmentUpdate({
           id: appt.id,
           status: "no-show",
           cancelReason: reason,
         });
+         appt.googleEventId && await deleteEvent(appt.googleEventId)
       }
       setPendingAction(null);
     } catch (error: any) {
@@ -133,7 +168,6 @@ export function Appointment() {
       if (backendMessage) {
         setError({ message: backendMessage });
       } else {
-       
         setError(errorResponce(status));
       }
       setPendingAction(null);
@@ -238,17 +272,52 @@ export function Appointment() {
 
               {/* Lista */}
               {!isLoading && filtered.length > 0 && (
-                <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                  {filtered.map((appt) => (
-                    <AppointmentCard
-                      key={appt.id}
-                      data={appt}
-                      onAction={(action, appt) =>
-                        setPendingAction({ type: action, appt })
+                <>
+                  <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                    {filtered.map((appt) => (
+                      <AppointmentCard
+                        key={appt.id}
+                        data={appt}
+                        onAction={(action, appt) =>
+                          setPendingAction({ type: action, appt })
+                        }
+                      />
+                    ))}
+                  </div>
+
+                  {/* Paginação */}
+                  <div className="mt-10 flex items-center justify-center gap-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setNumPage((prev) => Math.max(prev - 1, 1))
                       }
-                    />
-                  ))}
-                </div>
+                      disabled={!hasPrevPage || isLoading}
+                      className="rounded-xl border-gray-200 bg-white shadow-sm hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Anterior
+                    </Button>
+
+                    <div className="bg-white px-4 py-1.5 rounded-lg border border-gray-100 shadow-sm">
+                      <span className="text-sm font-bold text-blue-600">
+                        {numPage}
+                      </span>
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNumPage((prev) => prev + 1)}
+                      disabled={!hasNextPage || isLoading}
+                      className="rounded-xl border-gray-200 bg-white shadow-sm hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      Próximo
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </>
               )}
 
               {/* Empty state */}
@@ -261,6 +330,15 @@ export function Appointment() {
                   <p className="text-gray-500 text-sm mt-1">
                     Sem registros para o filtro selecionado.
                   </p>
+                  {numPage > 1 && (
+                    <Button
+                      variant="link"
+                      onClick={() => setNumPage(1)}
+                      className="mt-4 text-blue-600"
+                    >
+                      Voltar para a primeira página
+                    </Button>
+                  )}
                 </div>
               )}
             </main>

@@ -8,6 +8,8 @@ export const AppointmentRequestSchema = z.object({
   professionalId: z.coerce.number(),
   clientId: z.string(),
   serviceId: z.number(),
+  googleEventId: z.string().optional(),
+  googleHtmlLink: z.string().optional(),
 });
 
 

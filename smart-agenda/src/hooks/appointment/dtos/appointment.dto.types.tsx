@@ -37,6 +37,7 @@ export type AppointmentForm = {
   endTime: string;
   professionalId: string;
   clientId: string;
+  clientName: string;
   serviceId: string;
 };
 
@@ -70,6 +71,8 @@ export type Appointment = {
   professionalId: number;
   clientId: string;
   serviceId: number;
+  googleEventId?: string;
+  googleHtmlLink?: string;
 
   date: string;
   startTime: string;

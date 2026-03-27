@@ -16,7 +16,6 @@ import {
   AppointmentDTO,
   AppointmentRequestDTO,
   FindAllAppointments,
-  FindAppointmentsQueryDTO,
   UpdateAppointmentDTO,
 } from "./appointment.dto";
 import { AppointmentService } from "./appointment.service";
@@ -37,11 +36,8 @@ export class AppointmentController {
 
   @Get()
   @ApiOkResponse({ type: FindAllAppointments })
-  findAll(
-    @Query() query?: QueryPaginationDTO,
-    @Query() params?: FindAppointmentsQueryDTO,
-  ) {
-    return this.service.findAll(query, params);
+  findAll(@Query() query?: QueryPaginationDTO) {
+    return this.service.findAll(query);
   }
 
   @Patch(":appointmentId/confirm")

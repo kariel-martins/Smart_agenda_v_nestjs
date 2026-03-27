@@ -16,6 +16,7 @@ import { useUnauthorized } from "./components/useUnauthorized";
 import { UnauthorizedOverlay } from "./components/UnauthorizedOverlay";
 import { RegisterSuccess } from "./pages/registerSuccess";
 import { LandingPage } from "./pages/landingPage";
+import { CalendarSettings } from "./pages/CalendarSettings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,6 +56,7 @@ function AppRoutes() {
               path="/availability"
               element={<ProfessionalAvailability />}
             />
+            <Route path="/settings/calendar" element={<CalendarSettings />} />
             <Route path="/register" element={<Register />} />
             <Route path="/cadastro-sucesso" element={<RegisterSuccess />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

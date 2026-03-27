@@ -1,17 +1,16 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { QueryPaginationDTO } from "src/common/dtos/query-pagination";
 import { ExecuteHandler } from "src/common/handlers/execute.handler";
 import { RequestContextService } from "src/common/services/request-context/request-context.service";
 import { PrismaService } from "src/prisma.service";
 import { paginate, paginateOutput } from "src/utils/pagination.utils";
+import { NoShowHandlerService } from "../no-show-rules/no-show-handler.service";
+import { guardClientRestrictions } from "./appointment.client-restrictions";
 import {
   AppointmentDTO,
   AppointmentRequestDTO,
-  FindAppointmentsQueryDTO,
   UpdateAppointmentDTO,
 } from "./appointment.dto";
-import { NoShowHandlerService } from "../no-show-rules/no-show-handler.service";
-import { guardClientRestrictions } from "./appointment.client-restrictions";
 
 @Injectable()
 export class AppointmentService {
@@ -38,14 +37,13 @@ export class AppointmentService {
     }, "Não foi possível criar o agendamento");
   }
 
-  findAll(query?: QueryPaginationDTO, params?: FindAppointmentsQueryDTO) {
+  findAll(query?: QueryPaginationDTO) {
     return this.execute.repository(async () => {
       const user = this.requestContext.getUser();
       const result = await this.prisma.appointment.findMany({
         ...paginate(query),
         where: {
           businessId: user.businessId,
-          ...params,
         },
         include: {
           client: {
