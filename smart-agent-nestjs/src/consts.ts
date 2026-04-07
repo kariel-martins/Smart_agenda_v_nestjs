@@ -1,7 +1,12 @@
-export const VALIDATE_RESOURCES_IDS_KEY = 'validate-resources-ids'
-export const EMAIL_QUEUE = 'email-queue'
-export const EMAIL_SERVICE = 'EMAIL_SERVICE'
-export const SEND_CREATE_ACCOUNT = 'send_create_account'
-export const SEND_PASSWORD_RESET = 'send_password_reset'
+export const VALIDATE_RESOURCES_IDS_KEY = "validate-resources-ids";
+export const EMAIL_QUEUE = "email-queue";
+export const EMAIL_SERVICE = "EMAIL_SERVICE";
+export const SEND_CREATE_ACCOUNT = "send_create_account";
+export const SEND_PASSWORD_RESET = "send_password_reset";
+export const SEND_FORGOT_PASSWORD = "send_forgot_password";
 
-export const ROLES_KEY = 'roles'
+export const NOTIFICATIONS_QUEUE = "notifications-queue";
+export const NOTIFICATIONS_SERVICE = "NOTIFICATIONS_SERVICE";
+export const SEND_WHATSAPP_NOTIFICATION = "send-notification";
+
+export const ROLES_KEY = "roles";

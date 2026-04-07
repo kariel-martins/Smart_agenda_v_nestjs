@@ -8,6 +8,7 @@ export async function guardClientRestrictions(
   const client = await prisma.client.findUniqueOrThrow({
     where: { id: clientId },
     select: {
+      phone: true,
       isBlocked: true,
       requiresDeposit: true,
       pendingApproval: true,
@@ -26,5 +27,5 @@ export async function guardClientRestrictions(
     );
   }
 
-  return client.requiresDeposit;
+  return client;
 }

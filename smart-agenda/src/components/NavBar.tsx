@@ -5,6 +5,7 @@ import {
   ShieldAlert,
   CalendarCheck,
   CalendarDays,
+  CalendarX2,
   Menu,
   X,
 } from "lucide-react";
@@ -18,7 +19,11 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { UseAuth } from "@/contexts/AuthContext";
-import { useGoogleCalendarConnect, useGoogleCalendarStatus } from "@/hooks/google-calendar/google-calendar.mutate";
+import {
+  useGoogleCalendarConnect,
+  useGoogleCalendarDisconnect,
+  useGoogleCalendarStatus,
+} from "@/hooks/google-calendar/google-calendar.mutate";
 import { useState } from "react";
 
 const NAV_LINKS = [
@@ -32,10 +37,15 @@ export function NavBar() {
   const { pathname } = useLocation();
   const { data: calendarStatus } = useGoogleCalendarStatus();
   const { mutateAsync: connect } = useGoogleCalendarConnect();
+  const { mutateAsync: disconnect, isPending: isDisconnecting } = useGoogleCalendarDisconnect();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   async function handleConnectGoogle() {
-    await connect()
+    await connect();
+  }
+
+  async function handleDisconnectGoogle() {
+    await disconnect();
   }
 
   function isActive(to: string, exact?: boolean) {
@@ -129,17 +139,46 @@ export function NavBar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuItem asChild>
-                <Link to="/business-profile" className={`flex items-center gap-2 cursor-pointer ${isActive("/business-profile") ? "text-blue-600 bg-blue-50" : ""}`}>
+                <Link
+                  to="/business-profile"
+                  className={`flex items-center gap-2 cursor-pointer ${
+                    isActive("/business-profile") ? "text-blue-600 bg-blue-50" : ""
+                  }`}
+                >
                   <Building2 className="h-4 w-4" /> Perfil do Negócio
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/no-show-rules" className={`flex items-center gap-2 cursor-pointer ${isActive("/no-show-rules") ? "text-blue-600 bg-blue-50" : ""}`}>
+                <Link
+                  to="/no-show-rules"
+                  className={`flex items-center gap-2 cursor-pointer ${
+                    isActive("/no-show-rules") ? "text-blue-600 bg-blue-50" : ""
+                  }`}
+                >
                   <ShieldAlert className="h-4 w-4" /> Regras de No-Show
                 </Link>
               </DropdownMenuItem>
+
+              {/* Desconectar Google Calendar — só aparece quando conectado */}
+              {calendarStatus?.connected && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleDisconnectGoogle}
+                    disabled={isDisconnecting}
+                    className="flex items-center gap-2 cursor-pointer text-orange-600 focus:text-orange-600 focus:bg-orange-50"
+                  >
+                    <CalendarX2 className="h-4 w-4" />
+                    {isDisconnecting ? "Desconectando..." : "Desconectar Calendar"}
+                  </DropdownMenuItem>
+                </>
+              )}
+
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => logout()} className="text-red-600 gap-2 cursor-pointer">
+              <DropdownMenuItem
+                onClick={() => logout()}
+                className="text-red-600 gap-2 cursor-pointer"
+              >
                 Sair
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -194,23 +233,25 @@ export function NavBar() {
           </nav>
 
           <div className="border-t border-gray-100 mt-3 pt-3 flex flex-col gap-1">
-            {/* Google Calendar */}
-            <button
-              onClick={() => { closeMobile(); handleConnectGoogle(); }}
-              disabled={calendarStatus?.connected}
-              className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full text-left ${
-                calendarStatus?.connected
-                  ? "text-green-700 bg-green-50 cursor-default"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-blue-600"
-              }`}
-            >
-              {calendarStatus?.connected ? (
-                <CalendarCheck className="h-4 w-4 shrink-0" />
-              ) : (
+            {/* Google Calendar: conectar ou desconectar */}
+            {calendarStatus?.connected ? (
+              <button
+                onClick={() => { closeMobile(); handleDisconnectGoogle(); }}
+                disabled={isDisconnecting}
+                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full text-left text-orange-600 hover:bg-orange-50 disabled:opacity-60"
+              >
+                <CalendarX2 className="h-4 w-4 shrink-0" />
+                {isDisconnecting ? "Desconectando..." : "Desconectar Calendar"}
+              </button>
+            ) : (
+              <button
+                onClick={() => { closeMobile(); handleConnectGoogle(); }}
+                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full text-left text-gray-600 hover:bg-gray-50 hover:text-blue-600"
+              >
                 <CalendarDays className="h-4 w-4 shrink-0" />
-              )}
-              {calendarStatus?.connected ? "Calendar conectado" : "Conectar Calendar"}
-            </button>
+                Conectar Calendar
+              </button>
+            )}
 
             {/* Perfil do Negócio */}
             <Link

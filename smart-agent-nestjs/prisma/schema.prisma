@@ -33,6 +33,14 @@ enum NoShowAction {
   manual_approval
 }
 
+model GoogleWatch {
+  id         Int      @id @default(autoincrement())
+  userId     String   @unique
+  channelId  String
+  resourceId String
+  expiration DateTime
+}
+
 model GoogleToken {
   id           String   @id @default(uuid())
   userId     String   @db.Uuid @map("user_id") @unique
@@ -177,7 +185,7 @@ model Appointment {
   professionalId Int                @map("professional_id")
   clientId       String             @db.Uuid @map("client_id")
   serviceId      Int                @map("service_id")
-  googleEventId  String?            @map("googleEvent_Id")
+  googleEventId  String?            @unique @map("googleEvent_Id")
   googleHtmlLink  String?
   date           String
   startTime      String             @map("start_time")
@@ -199,6 +207,7 @@ model Appointment {
 model NotificationLog {
   id            Int      @id @default(autoincrement())
   appointmentId Int      @map("appointment_id")
+  content       String?
   type          String
   sendAt        DateTime @default(now()) @map("send_at")
   status        String   @default("sent")

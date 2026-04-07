@@ -17,6 +17,8 @@ import { UnauthorizedOverlay } from "./components/UnauthorizedOverlay";
 import { RegisterSuccess } from "./pages/registerSuccess";
 import { LandingPage } from "./pages/landingPage";
 import { CalendarSettings } from "./pages/CalendarSettings";
+import { useCalendarNotifications } from "./hooks/google-calendar/google-calendar.socket";
+import { Toaster } from "react-hot-toast";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,10 +39,13 @@ const queryClient = new QueryClient({
 function AppRoutes() {
   const isUnauthorized = useUnauthorized();
 
+  useCalendarNotifications();
+
   return (
     <>
       {isUnauthorized && <UnauthorizedOverlay />}
-      <AuthProvider>
+      <Toaster position="top-right" />
+    
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<LandingPage />} />
@@ -65,15 +70,16 @@ function AppRoutes() {
             <Route path="/users" element={<Users />} />
           </Routes>
         </BrowserRouter>
-      </AuthProvider>
     </>
   );
 }
 
 function App() {
-   return (
+  return (
     <QueryClientProvider client={queryClient}>
+        <AuthProvider>
       <AppRoutes />
+        </AuthProvider>
     </QueryClientProvider>
   );
 }

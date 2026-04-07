@@ -1,14 +1,20 @@
 import {
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import { ClientProxy } from "@nestjs/microservices";
 import bcrypt from "bcrypt";
 import { ExecuteHandler } from "src/common/handlers/execute.handler";
+import {
+  SEND_CREATE_ACCOUNT,
+  SEND_FORGOT_PASSWORD,
+  SEND_PASSWORD_RESET,
+} from "src/consts";
 import { PrismaService } from "src/prisma.service";
-import { MailService } from "../mail/mail.service";
 import {
   BusinessUserAndTokensDTO,
   MessageReponceDTO,
@@ -21,8 +27,10 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly mailService: MailService,
     private readonly execute: ExecuteHandler,
+
+    @Inject("EMAIL_SERVICE")
+    private readonly clientMail: ClientProxy,
   ) {}
 
   public async signup(
@@ -90,9 +98,13 @@ export class AuthService {
           HttpStatus.NOT_FOUND,
         );
 
-      this.mailService.sendCreateAccount("/auth/signin", {
+      this.clientMail.emit(SEND_CREATE_ACCOUNT, {
+        type: "email",
+        action: "create-account",
+        pathRoute: "auth/signin",
         email: result.newUser.email,
         subject: "Create Account",
+        UserName: result.newUser.name,
       });
 
       return { message: "conta criada com sucesso!" };
@@ -321,15 +333,15 @@ export class AuthService {
 
       if (!resetPasswordToken) throw new UnauthorizedException();
 
-      this.mailService.sendForgotPassword({
+      this.clientMail.emit(SEND_FORGOT_PASSWORD, {
+        type: "email",
+        action: "forgot-password",
+        pathRoute: "auth/forgot-password",
+        email: findUser.email,
+        subject: "Forgot password",
         UserName: findUser.name,
-        pathRoute: "/auth/reset-password",
-        token: resetPasswordToken,
-        EmailDate: {
-          email: findUser.email,
-          subject: "Reset Password",
-        },
       });
+
       return resetPasswordToken;
     }, "Não possível buscar pelo email");
   }
@@ -359,15 +371,15 @@ export class AuthService {
           HttpStatus.NOT_FOUND,
         );
 
-      const HASH_PASSWORD = await bcrypt.hash(data.password);
+      const HASH_PASSWORD = await bcrypt.hash(data.password, 12);
 
-      this.mailService.sendResetPassword({
+      this.clientMail.emit(SEND_PASSWORD_RESET, {
+        type: "email",
+        action: "reset-password",
+        pathRoute: "auth/reset-password",
+        email: findUser.email,
+        subject: "reset password",
         UserName: findUser.name,
-        pathRoute: "/auth/signin",
-        EmailDate: {
-          email: findUser.email,
-          subject: findUser.name,
-        },
       });
 
       return await this.prisma.user.update({

@@ -15,6 +15,7 @@ import {
 } from "@/hooks/clients/client.mutate";
 import { ErrorMessage } from "@/components/ErrorResponce";
 import { errorResponce } from "@/Errors/errors";
+import { normalizePhone, validateBrazilianPhone } from "@/utils/phone.utils";
 
 export function Customers() {
   const { mutateAsync: clientCreate } = useClientCreate();
@@ -41,12 +42,21 @@ export function Customers() {
   );
 
   async function handleSave(form: ClientForm, id?: string) {
+     if (!validateBrazilianPhone(form.phone)) {
+    setError({ message: "Telefone inválido. Use o formato: (99) 99999-9999" });
+    return;
+  }
     setError(null);
     try {
+        const normalizedForm: ClientForm = {
+      ...form,
+      phone: normalizePhone(form.phone),
+    };
+
       if (id) {
-        await clientUpdate({ ...form, id });
+        await clientUpdate({ ...normalizedForm, id });
       } else {
-        await clientCreate(form);
+        await clientCreate(normalizedForm);
       }
       setModal(null);
     } catch (error: any) {

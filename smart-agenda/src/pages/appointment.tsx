@@ -90,7 +90,6 @@ export function Appointment() {
         endDateTime: `${form.date}T${form.endTime}`,
         timeZone: "America/Sao_Paulo",
       });
-      console.log(event)
 
       await appointmentCreate({
         date: form.date,

@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
   Injectable,
   NotFoundException,
@@ -5,8 +6,8 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { calendar_v3, google } from "googleapis";
-import { RequestContextService } from "src/common/services/request-context/request-context.service";
 import { PrismaService } from "src/prisma.service";
+import { NotificationGatewayGateway } from "../../common/gateway/notification-gateway/notification-gateway.gateway";
 
 @Injectable()
 export class GoogleCalendarService {
@@ -15,21 +16,16 @@ export class GoogleCalendarService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
-    private readonly requestContext: RequestContextService,
+    private readonly notificationGateway: NotificationGatewayGateway,
   ) {
-    const clientId = this.config.get("GOOGLE_CLIENT_ID");
-    const clientSecret = this.config.get("GOOGLE_CLIENT_SECRET");
-    const callbackUrl = this.config.get("GOOGLE_CALLBACK_URL");
-
     this.oauth2Client = new google.auth.OAuth2(
-      clientId,
-      clientSecret,
-      callbackUrl,
+      this.config.get("GOOGLE_CLIENT_ID"),
+      this.config.get("GOOGLE_CLIENT_SECRET"),
+      this.config.get("GOOGLE_CALLBACK_URL"),
     );
   }
 
-  getAuthUrl(): string {
-    const userId = this.requestContext.getUserId();
+  getAuthUrl(userId: string): string {
     return this.oauth2Client.generateAuthUrl({
       access_type: "offline",
       prompt: "consent",
@@ -47,10 +43,11 @@ export class GoogleCalendarService {
       this.config.get("GOOGLE_CLIENT_SECRET"),
       this.config.get("GOOGLE_CALLBACK_URL"),
     );
+
     const { tokens } = await client.getToken(code);
 
     if (!tokens.access_token) {
-      throw new UnauthorizedException("Token do Google inválido");
+      throw new UnauthorizedException("Token inválido");
     }
 
     await this.prisma.googleToken.upsert({
@@ -68,26 +65,28 @@ export class GoogleCalendarService {
       },
     });
 
-    return { message: "Google Calendar conectado com sucesso!" };
+    await this.watchCalendar(userId);
+
+    return { message: "Conectado com sucesso" };
   }
 
-  private async getAuthenticatedClient() {
-    const userId = this.requestContext.getUserId();
-    const tokenRecord = await this.prisma.googleToken.findUnique({
+  private async getClientByUser(userId: string) {
+    const token = await this.prisma.googleToken.findUnique({
       where: { userId },
     });
 
-    if (!tokenRecord) {
-      throw new NotFoundException("Usuário não conectou o Google Calendar");
+    if (!token) {
+      throw new NotFoundException("Google não conectado");
     }
 
     this.oauth2Client.setCredentials({
-      access_token: tokenRecord.accessToken,
-      refresh_token: tokenRecord.refreshToken,
+      access_token: token.accessToken,
+      refresh_token: token.refreshToken,
     });
 
-    if (tokenRecord.expiresAt < new Date()) {
+    if (token.expiresAt < new Date()) {
       const { credentials } = await this.oauth2Client.refreshAccessToken();
+
       await this.prisma.googleToken.update({
         where: { userId },
         data: {
@@ -97,19 +96,99 @@ export class GoogleCalendarService {
           ),
         },
       });
+
       this.oauth2Client.setCredentials(credentials);
     }
 
     return google.calendar({ version: "v3", auth: this.oauth2Client });
   }
 
-  async listEvents(): Promise<calendar_v3.Schema$Event[]> {
-    const calendar = await this.getAuthenticatedClient();
+  private async getAuthenticatedClient(userId: string) {
+    return this.getClientByUser(userId);
+  }
+
+  async watchCalendar(userId: string) {
+    const calendar = await this.getClientByUser(userId);
+
+    const response = await calendar.events.watch({
+      calendarId: "primary",
+      requestBody: {
+        id: randomUUID(),
+        type: "web_hook",
+        address: `${this.config.get("BACKEND_URL")}/v1/google-calendar/webhook`,
+      },
+    });
+
+    await this.prisma.googleWatch.upsert({
+      where: { userId },
+      create: {
+        userId,
+        channelId: response.data.id!,
+        resourceId: response.data.resourceId!,
+        expiration: new Date(Number(response.data.expiration)),
+      },
+      update: {
+        channelId: response.data.id!,
+        resourceId: response.data.resourceId!,
+        expiration: new Date(Number(response.data.expiration)),
+      },
+    });
+
+    return response.data;
+  }
+
+  async handleWebhook(resourceId: string) {
+    const watch = await this.prisma.googleWatch.findFirst({
+      where: { resourceId },
+    });
+
+    if (!watch) return;
+
+    await this.syncEvents(watch.userId);
+  }
+
+  async syncEvents(userId: string) {
+    const calendar = await this.getClientByUser(userId);
+
+    const events = await calendar.events.list({
+      calendarId: "primary",
+      singleEvents: true,
+      showDeleted: true,
+    });
+
+    const items = events.data.items ?? [];
+
+    for (const event of items) {
+      if (!event.id) continue;
+
+      const existing = await this.prisma.appointment.findFirst({
+        where: { googleEventId: event.id },
+      });
+
+      if (!existing) continue;
+
+      if (event.status === "cancelled") {
+        await this.prisma.appointment.delete({
+          where: { id: existing.id },
+        });
+      } else {
+        await this.prisma.appointment.update({
+          where: { id: existing.id },
+          data: {
+            date: event.start?.dateTime ?? existing.date,
+          },
+        });
+      }
+    }
+    this.notificationGateway.sendToUser(userId, "Seu evento foi atualizado");
+  }
+
+  async listEvents(userId: string): Promise<calendar_v3.Schema$Event[]> {
+    const calendar = await this.getAuthenticatedClient(userId);
 
     const response = await calendar.events.list({
       calendarId: "primary",
       timeMin: new Date().toISOString(),
-      maxResults: 20,
       singleEvents: true,
       orderBy: "startTime",
     });
@@ -119,26 +198,44 @@ export class GoogleCalendarService {
 
   async createEvent(
     event: calendar_v3.Schema$Event,
+    userId: string,
   ): Promise<calendar_v3.Schema$Event> {
-    const calendar = await this.getAuthenticatedClient();
+    const calendar = await this.getAuthenticatedClient(userId);
 
     const response = await calendar.events.insert({
       calendarId: "primary",
       requestBody: event,
     });
+
     return response.data;
   }
 
-  async getStatus(): Promise<{ connected: boolean; email?: string }> {
-    const userId = this.requestContext.getUserId();
+  async deleteEvent(eventId: string, userId: string): Promise<void> {
+    const calendar = await this.getAuthenticatedClient(userId);
+
+    await calendar.events.delete({
+      calendarId: "primary",
+      eventId,
+    });
+  }
+
+  async getStatus(
+    userId: string,
+  ): Promise<{ connected: boolean; email?: string }> {
     const token = await this.prisma.googleToken.findUnique({
       where: { userId },
-      select: { accessToken: true },
     });
 
     if (!token) return { connected: false };
-    const oauth2 = google.oauth2({ version: "v2", auth: this.oauth2Client });
-    this.oauth2Client.setCredentials({ access_token: token.accessToken });
+
+    this.oauth2Client.setCredentials({
+      access_token: token.accessToken,
+    });
+
+    const oauth2 = google.oauth2({
+      version: "v2",
+      auth: this.oauth2Client,
+    });
 
     try {
       const { data } = await oauth2.userinfo.get();
@@ -148,17 +245,7 @@ export class GoogleCalendarService {
     }
   }
 
-  async deleteEvent(eventId: string): Promise<void> {
-    const calendar = await this.getAuthenticatedClient();
-
-    await calendar.events.delete({
-      calendarId: "primary",
-      eventId,
-    });
-  }
-
-  async disconnectGoogle(): Promise<void> {
-    const userId = this.requestContext.getUserId();
+  async disconnectGoogle(userId: string): Promise<void> {
     const token = await this.prisma.googleToken.findUnique({
       where: { userId },
     });
@@ -167,5 +254,9 @@ export class GoogleCalendarService {
       await this.oauth2Client.revokeToken(token.accessToken).catch(() => {});
       await this.prisma.googleToken.delete({ where: { userId } });
     }
+
+    await this.prisma.googleWatch.deleteMany({
+      where: { userId },
+    });
   }
 }
